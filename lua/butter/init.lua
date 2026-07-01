@@ -1,14 +1,9 @@
----@class IconsOpts
----@field dir string icon for a directory
----@field file string icon for a file
-
 ---@class Opts
 ---@field show_hidden? boolean show hidden files
 ---@field no_ignore? boolean don't use ignore files such as .gitignore
 ---@field exclude? string[] exclude a file or directory
 ---@field sort? fun(a: string, b: string): boolean custom sort, directory-first by default
 ---@field auto_open? boolean auto open when neovim is invoked with a directory e.g. `nvim .`
----@field icons? IconsOpts options for icons
 
 local M = {}
 
@@ -23,10 +18,6 @@ local default_opts = {
   exclude = {},
   sort = nil,
   auto_open = false,
-  icons = {
-    dir = "",
-    file = "",
-  },
 }
 
 ---Run a system command synchronously.
@@ -163,25 +154,26 @@ local function create_buf_in_current_win()
   vim.api.nvim_set_current_buf(buf)
 end
 
----Resolve the icon and highlight group for a path.
+---Resolve the icon and highlight group for a path. Requires nvim-web-devicons;
+---returns nil when it isn't installed, so no icon is shown.
 ---
 ---@param path string
 ---
----@return string icon
----@return string hl highlight group
+---@return string? icon
+---@return string? hl highlight group
 local function get_icon(path)
-  if is_directory(path) then
-    return opts.icons.dir, "Directory"
-  end
-
   local ok, devicons = pcall(require, "nvim-web-devicons")
-  if ok then
-    local name = vim.fn.fnamemodify(path, ":t")
-    local ext = vim.fn.fnamemodify(path, ":e")
-    return devicons.get_icon(name, ext, { default = true })
+  if not ok then
+    return nil
   end
 
-  return opts.icons.file, "Normal"
+  if is_directory(path) then
+    return "󰉋", "Directory"
+  end
+
+  local name = vim.fn.fnamemodify(path, ":t")
+  local ext = vim.fn.fnamemodify(path, ":e")
+  return devicons.get_icon(name, ext, { default = true })
 end
 
 ---Refresh the buffer with the current file list and its icons/highlights.
@@ -196,11 +188,12 @@ local function update_buf()
 
   for i, path in ipairs(files) do
     local icon, hl = get_icon(path)
-
-    vim.api.nvim_buf_set_extmark(buf, ns, i - 1, 0, {
-      virt_text = { { icon .. " ", hl } },
-      virt_text_pos = "inline",
-    })
+    if icon then
+      vim.api.nvim_buf_set_extmark(buf, ns, i - 1, 0, {
+        virt_text = { { icon, hl } },
+        virt_text_pos = "inline",
+      })
+    end
 
     local slash = path:match("^.*()/")
     if slash then

@@ -70,10 +70,6 @@ require("butter").setup({
   exclude = {},        -- paths to exclude, e.g. { ".git", "node_modules", "dist" }
   sort = nil,          -- custom sorting function: fun(a: string, b: string): boolean
   auto_open = false,   -- open Butter when Neovim starts with a directory, e.g. `nvim .`
-  icons = {            -- glyphs shown before each entry (empty by default; set e.g. Nerd Font glyphs)
-    dir = "",
-    file = "",
-  },
 })
 ```
 
