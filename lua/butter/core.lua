@@ -86,15 +86,18 @@ function M.update_buf()
   end
 end
 
----Edit the file under the cursor. Directories are ignored.
+---Edit the file under the cursor; a directory opens a Butter buffer inside it.
 function M.open()
   local path = vim.api.nvim_get_current_line()
-
-  if path == "" or utils.is_directory(path) then
+  if path == "" then
     return
   end
 
-  vim.cmd.edit(path)
+  if utils.is_directory(path) then
+    M.open_butter(path)
+  else
+    vim.cmd.edit(path)
+  end
 end
 
 ---Prompt for a path and create it. A trailing slash makes a directory,
