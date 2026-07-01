@@ -316,4 +316,6 @@ function M.setup(user_opts)
   end
 end
 
+M._test = { add = add, move = move, copy = copy, delete = delete }
+
 return M

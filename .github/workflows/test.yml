@@ -1,0 +1,27 @@
+name: test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: rhysd/action-setup-vim@v1
+        with:
+          neovim: true
+          version: stable
+
+      # Ubuntu ships fd as `fdfind`; Butter calls `fd`, so symlink it.
+      - name: Install fd
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y fd-find
+          sudo ln -s "$(which fdfind)" /usr/local/bin/fd
+
+      - name: Run tests
+        run: nvim --headless --noplugin -u NONE --cmd "set rtp+=$PWD" -l tests/run.lua
