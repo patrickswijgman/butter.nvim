@@ -187,7 +187,7 @@ end
 ---
 ---@param path? string the base directory
 function M.open_butter(path)
-  if vim.fn.isdirectory(path or "") == 1 then
+  if path then
     vim.cmd.cd(path)
   end
 
