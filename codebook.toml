@@ -4,6 +4,7 @@ words = [
     "bufhidden",
     "buflisted",
     "buftype",
+    "devicons",
     "esc",
     "keymaps",
     "metatable",

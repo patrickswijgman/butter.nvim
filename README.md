@@ -14,6 +14,7 @@ A minimal, buttery-smooth file explorer for Neovim. Inspired by [oil.nvim](https
 - Neovim 0.10+ (uses `vim.system`)
 - [fd](https://github.com/sharkdp/fd)
 - Unix commands: `mkdir`, `touch`, `mv`, `cp`, `rm` (used for file operations)
+- [nvim-web-devicons](https://github.com/nvim-tree/nvim-web-devicons) (optional, for file icons)
 
 ## Install
 

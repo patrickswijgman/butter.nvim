@@ -163,6 +163,27 @@ local function create_buf_in_current_win()
   vim.api.nvim_set_current_buf(buf)
 end
 
+---Resolve the icon and highlight group for a path.
+---
+---@param path string
+---
+---@return string icon
+---@return string hl highlight group
+local function get_icon(path)
+  if is_directory(path) then
+    return opts.icons.dir, "Directory"
+  end
+
+  local ok, devicons = pcall(require, "nvim-web-devicons")
+  if ok then
+    local name = vim.fn.fnamemodify(path, ":t")
+    local ext = vim.fn.fnamemodify(path, ":e")
+    return devicons.get_icon(name, ext, { default = true })
+  end
+
+  return opts.icons.file, "Normal"
+end
+
 ---Refresh the buffer with the current file list and its icons/highlights.
 local function update_buf()
   local files = get_files()
@@ -174,12 +195,10 @@ local function update_buf()
   vim.api.nvim_buf_clear_namespace(buf, ns, 0, -1)
 
   for i, path in ipairs(files) do
-    local is_dir = is_directory(path)
-    local icon = is_dir and opts.icons.dir or opts.icons.file
-    local hl = is_dir and "Directory" or "Normal"
+    local icon, hl = get_icon(path)
 
     vim.api.nvim_buf_set_extmark(buf, ns, i - 1, 0, {
-      virt_text = { { icon, hl } },
+      virt_text = { { icon .. " ", hl } },
       virt_text_pos = "inline",
     })
 
