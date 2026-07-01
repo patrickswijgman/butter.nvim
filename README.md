@@ -48,7 +48,7 @@ file you were editing. Inside the buffer:
 | `m`            | Move / rename                                                                |
 | `c`            | Copy                                                                         |
 | `d`            | Delete (with confirmation)                                                   |
-| `q` / `escape` | Close (wipe) Butter                                                          |
+| `q` / `escape` | Close (wipe) Butter buffer                                                   |
 
 Add it as a keymap in your config:
 
