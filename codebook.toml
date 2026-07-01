@@ -1,11 +1,14 @@
 words = [
+    "Neovim's",
     "autocmd",
     "bufhidden",
     "buftype",
     "keymaps",
     "mkdir",
     "neovim",
+    "netrw",
     "nvim",
+    "patrickswijgman",
     "trimempty",
     "virt",
 ]

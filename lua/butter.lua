@@ -1,9 +1,14 @@
+---@class IconsOpts
+---@field dir string icon for a directory
+---@field file string icon for a file
+
 ---@class Opts
 ---@field show_hidden? boolean show hidden files
 ---@field no_ignore? boolean don't use ignore files such as .gitignore
 ---@field exclude? string[] exclude a file or directory
 ---@field sort? fun(a: string, b: string): boolean custom sort, directory-first by default
 ---@field auto_open? boolean auto open when neovim is invoked with a directory e.g. `nvim .`
+---@field icons? IconsOpts options for icons
 
 local M = {}
 
@@ -18,6 +23,10 @@ local default_opts = {
   exclude = {},
   sort = nil,
   auto_open = false,
+  icons = {
+    dir = "",
+    file = "",
+  },
 }
 
 ---Run a system command synchronously.
@@ -166,7 +175,7 @@ local function update_buf()
 
   for i, path in ipairs(files) do
     local is_dir = is_directory(path)
-    local icon = is_dir and "󰉋 " or "󰈤 "
+    local icon = is_dir and opts.icons.dir or opts.icons.file
     local hl = is_dir and "Directory" or "Normal"
 
     vim.api.nvim_buf_set_extmark(buf, ns, i - 1, 0, {
@@ -281,8 +290,7 @@ local function auto_open_butter()
   end
 end
 
----Merge user options over the defaults and register the `:Butter` command
----(and the auto-open autocmd when enabled). Call once from your config.
+---Initialize plugin.
 ---
 ---@param user_opts? Opts user options
 function M.setup(user_opts)
