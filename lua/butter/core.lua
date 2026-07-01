@@ -89,9 +89,12 @@ end
 ---Edit the file under the cursor. Directories are ignored.
 function M.open()
   local path = vim.api.nvim_get_current_line()
-  if path ~= "" and not utils.is_directory(path) then
-    vim.cmd.edit(path)
+
+  if path == "" or utils.is_directory(path) then
+    return
   end
+
+  vim.cmd.edit(path)
 end
 
 ---Prompt for a path and create it. A trailing slash makes a directory,
