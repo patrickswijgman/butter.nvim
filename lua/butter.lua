@@ -262,6 +262,11 @@ local function delete()
   end
 end
 
+---Wipe the Butter buffer, returning to the previously edited file.
+local function close()
+  vim.api.nvim_buf_delete(buf, { force = true })
+end
+
 ---Set the buffer-local keymaps for the file operations.
 local function set_buf_keymaps()
   local keymap_opts = { buffer = buf, nowait = true }
@@ -270,6 +275,8 @@ local function set_buf_keymaps()
   vim.keymap.set("n", "m", move, keymap_opts)
   vim.keymap.set("n", "c", copy, keymap_opts)
   vim.keymap.set("n", "d", delete, keymap_opts)
+  vim.keymap.set("n", "q", close, keymap_opts)
+  vim.keymap.set("n", "<esc>", close, keymap_opts)
 end
 
 ---Open Butter in the current window, cursor on the current file.
