@@ -111,5 +111,61 @@ stub("keep.txt", nil, 2) -- 2 = "No"
 ops.delete()
 check("delete: keeps the file when cancelled", exists("keep.txt"))
 
+-- navigation --------------------------------------------------------------
+-- Build a fresh tree, chdir into its root, open Butter. Returns the root path.
+local function tree(spec)
+  local root = vim.fn.tempname()
+  vim.fn.mkdir(root, "p")
+  for _, rel in ipairs(spec) do
+    if rel:sub(-1) == "/" then
+      vim.fn.mkdir(root .. "/" .. rel, "p")
+    else
+      local parent = vim.fn.fnamemodify(rel, ":h")
+      if parent ~= "." then
+        vim.fn.mkdir(root .. "/" .. parent, "p")
+      end
+      vim.fn.writefile({}, root .. "/" .. rel)
+    end
+  end
+  vim.fn.chdir(root)
+  vim.cmd("Butter")
+  return root
+end
+
+local function cwd_tail()
+  return vim.fn.fnamemodify(vim.fn.getcwd(), ":t")
+end
+
+local function buf_lines()
+  return vim.api.nvim_buf_get_lines(0, 0, -1, false)
+end
+
+tree({ "sub/inner.txt" })
+stub("sub/")
+ops.open()
+check("open: entering a directory changes cwd into it", cwd_tail() == "sub")
+check("open: listing shows the entered directory's contents", vim.tbl_contains(buf_lines(), "inner.txt"))
+
+ops.up()
+check("up: returns to the parent directory", vim.tbl_contains(buf_lines(), "sub/"))
+
+tree({ "file.txt" })
+stub("file.txt")
+ops.open()
+check("open: opening a file edits it", vim.fn.fnamemodify(vim.fn.expand("%"), ":t") == "file.txt")
+
+-- Reopening with :Butter (no path arg) must NOT reset to root: it stays in the
+-- current dir with the cursor on the file you came from.
+tree({ "sub/inner.txt" })
+stub("sub/")
+ops.open()
+stub("inner.txt")
+ops.open()
+ops.open_butter()
+check("Butter: reopens in the current dir, not root", cwd_tail() == "sub")
+local lines = buf_lines()
+local cur = vim.api.nvim_win_get_cursor(0)[1]
+check("Butter: cursor lands on the file you came from", lines[cur] == "inner.txt")
+
 print(("\n%d failed"):format(failures))
 vim.cmd(failures == 0 and "qa!" or "cq!")
