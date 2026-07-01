@@ -190,7 +190,7 @@ local function update_buf()
     local icon, hl = get_icon(path)
     if icon then
       vim.api.nvim_buf_set_extmark(buf, ns, i - 1, 0, {
-        virt_text = { { icon, hl } },
+        virt_text = { { icon .. " ", hl } },
         virt_text_pos = "inline",
       })
     end
