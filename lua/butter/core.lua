@@ -27,6 +27,10 @@ function M.get_files()
   local output = utils.cmd(command)
   local files = utils.split_lines(output)
 
+  if config.opts.sort == false then
+    return files
+  end
+
   if config.opts.sort then
     table.sort(files, config.opts.sort)
   else

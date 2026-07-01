@@ -68,7 +68,7 @@ require("butter").setup({
   show_hidden = false, -- pass --hidden to fd
   no_ignore = false,   -- pass --no-ignore to fd (don't use .gitignore etc.)
   exclude = {},        -- paths to exclude, e.g. { ".git", "node_modules", "dist" }
-  sort = nil,          -- custom sorting function: fun(a: string, b: string): boolean
+  sort = nil,          -- custom table sort function; or set to false to keep fd's order; or set to nil for directory-first sorting
   auto_open = false,   -- open Butter when Neovim starts with a directory, e.g. `nvim .`
 })
 ```
