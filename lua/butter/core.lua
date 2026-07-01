@@ -178,10 +178,17 @@ function M.close()
   vim.api.nvim_buf_delete(buf, { force = true })
 end
 
+---Open Butter in the parent directory.
+function M.up()
+  M.open_butter("../")
+end
+
 ---Set the buffer-local keymaps for the file operations.
 function M.set_buf_keymaps()
   local opts = { buffer = buf, nowait = true }
   vim.keymap.set("n", "<cr>", M.open, opts)
+  vim.keymap.set("n", "<bs>", M.up, opts)
+  vim.keymap.set("n", "-", M.up, opts)
   vim.keymap.set("n", "a", M.add, opts)
   vim.keymap.set("n", "m", M.move, opts)
   vim.keymap.set("n", "c", M.copy, opts)

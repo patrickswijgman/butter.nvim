@@ -44,14 +44,15 @@ require("butter").setup()
 Run `:Butter` to open the explorer in the current window, with the cursor on the
 file you were editing. Inside the buffer:
 
-| Key            | Action                                                     |
-| -------------- | ---------------------------------------------------------- |
-| `enter`        | Open the file or directory under the cursor                |
-| `a`            | Add a file or directory (trailing `/` creates a directory) |
-| `m`            | Move / rename                                              |
-| `c`            | Copy                                                       |
-| `d`            | Delete (with confirmation)                                 |
-| `q` / `escape` | Close (wipe) Butter buffer                                 |
+| Key               | Action                                                     |
+| ----------------- | ---------------------------------------------------------- |
+| `enter`           | Open the file or directory under the cursor                |
+| `-` / `backspace` | Go up to the parent directory                              |
+| `a`               | Add a file or directory (trailing `/` creates a directory) |
+| `m`               | Move / rename                                              |
+| `c`               | Copy                                                       |
+| `d`               | Delete (with confirmation)                                 |
+| `q` / `escape`    | Close (wipe) Butter buffer                                 |
 
 Add it as a keymap in your config:
 
