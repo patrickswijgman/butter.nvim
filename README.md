@@ -34,6 +34,8 @@ With `vim.pack`:
 vim.pack.add({
   "https://github.com/patrickswijgman/butter.nvim",
 })
+
+require("butter").setup()
 ```
 
 ## Usage
