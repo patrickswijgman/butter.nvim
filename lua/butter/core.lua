@@ -60,6 +60,7 @@ end
 ---Refresh the buffer with the current file list and its icons/highlights.
 function M.update_buf()
   local files = M.get_files()
+  table.insert(files, 1, "../")
 
   vim.bo[buf].modifiable = true
   vim.api.nvim_buf_set_lines(buf, 0, -1, false, files)
