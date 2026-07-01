@@ -105,9 +105,9 @@ end
 local function ensure_dir(src, dst)
   local dir
   if is_directory(dst) and not is_directory(src) then
-    dir = dst:gsub("/+$", "") -- move file into this dir
+    dir = dst:gsub("/+$", "")
   else
-    dir = get_parent_dir(dst:gsub("/+$", "")) -- rename/move to this path
+    dir = get_parent_dir(dst:gsub("/+$", ""))
   end
   cmd({ "mkdir", "-p", dir })
 end

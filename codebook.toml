@@ -2,6 +2,7 @@ words = [
     "Neovim's",
     "autocmd",
     "bufhidden",
+    "buflisted",
     "buftype",
     "keymaps",
     "mkdir",
