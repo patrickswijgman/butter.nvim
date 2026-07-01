@@ -53,7 +53,7 @@ end
 function M.create_buf_in_current_win()
   buf = vim.api.nvim_create_buf(false, true)
   vim.bo[buf].buftype = "nofile"
-  vim.bo[buf].bufhidden = "hide"
+  vim.bo[buf].bufhidden = "wipe"
   vim.api.nvim_set_current_buf(buf)
 end
 
