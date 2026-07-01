@@ -1,6 +1,8 @@
 words = [
     "Neovim's",
     "autocmd",
+    "autocmds",
+    "autocommands",
     "bufhidden",
     "buflisted",
     "buftype",

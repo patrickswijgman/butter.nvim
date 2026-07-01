@@ -3,9 +3,8 @@
 -- Run from the repo root:
 -- `nvim --headless --noplugin -u NONE --cmd "set rtp+=$PWD" -l tests/run.lua`
 
-local butter = require("butter")
-butter.setup()
-local ops = butter._test
+require("butter").setup()
+local ops = require("butter.core")
 
 local failures = 0
 local function check(name, ok)
