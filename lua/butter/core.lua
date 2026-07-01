@@ -173,11 +173,6 @@ function M.delete()
   M.update_buf()
 end
 
----Wipe the Butter buffer, returning to the previously edited file.
-function M.close()
-  vim.api.nvim_buf_delete(buf, { force = true })
-end
-
 ---Open Butter in the parent directory.
 function M.up()
   M.open_butter("../")
@@ -193,8 +188,6 @@ function M.set_buf_keymaps()
   vim.keymap.set("n", "m", M.move, opts)
   vim.keymap.set("n", "c", M.copy, opts)
   vim.keymap.set("n", "d", M.delete, opts)
-  vim.keymap.set("n", "q", M.close, opts)
-  vim.keymap.set("n", "<esc>", M.close, opts)
 end
 
 ---Open Butter in the current window, cursor on the current file.
