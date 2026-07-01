@@ -1,0 +1,11 @@
+words = [
+    "autocmd",
+    "bufhidden",
+    "buftype",
+    "keymaps",
+    "mkdir",
+    "neovim",
+    "nvim",
+    "trimempty",
+    "virt",
+]
