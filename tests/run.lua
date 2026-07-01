@@ -4,7 +4,7 @@
 -- `nvim --headless --noplugin -u NONE --cmd "set rtp+=$PWD" -l tests/run.lua`
 
 require("butter").setup()
-local ops = require("butter.core")
+local core = require("butter.core")
 
 local failures = 0
 local function check(name, ok)
@@ -51,64 +51,64 @@ end
 -- add ---------------------------------------------------------------------
 fresh()
 stub("", "newfile.txt")
-ops.add()
+core.add()
 check("add: creates a file", exists("newfile.txt") and not is_dir("newfile.txt"))
 
 fresh()
 stub("", "newdir/")
-ops.add()
+core.add()
 check("add: trailing slash creates a directory", is_dir("newdir"))
 
 fresh()
 stub("", "a/b/c.txt")
-ops.add()
+core.add()
 check("add: creates missing parent directories", exists("a/b/c.txt"))
 
 -- move --------------------------------------------------------------------
 fresh()
 vim.fn.writefile({}, "old.txt")
 stub("old.txt", "new.txt")
-ops.move()
+core.move()
 check("move: renames a file", exists("new.txt") and not exists("old.txt"))
 
 fresh()
 vim.fn.writefile({}, "f.txt")
 stub("f.txt", "sub/")
-ops.move()
+core.move()
 check("move: moves a file into a directory", exists("sub/f.txt") and not exists("f.txt"))
 
 fresh()
 vim.fn.mkdir("a", "p")
 vim.fn.writefile({}, "a/f.txt")
 stub("a/f.txt", "b/g.txt")
-ops.move()
+core.move()
 check("move: moves across directories", exists("b/g.txt") and not exists("a/f.txt"))
 
 -- copy --------------------------------------------------------------------
 fresh()
 vim.fn.writefile({}, "src.txt")
 stub("src.txt", "copy.txt")
-ops.copy()
+core.copy()
 check("copy: duplicates a file", exists("src.txt") and exists("copy.txt"))
 
 fresh()
 vim.fn.mkdir("a", "p")
 vim.fn.writefile({}, "a/f.txt")
 stub("a/f.txt", "b/g.txt")
-ops.copy()
+core.copy()
 check("copy: copies across directories", exists("a/f.txt") and exists("b/g.txt"))
 
 -- delete ------------------------------------------------------------------
 fresh()
 vim.fn.writefile({}, "del.txt")
 stub("del.txt", nil, 1) -- 1 = "Yes"
-ops.delete()
+core.delete()
 check("delete: removes a confirmed file", not exists("del.txt"))
 
 fresh()
 vim.fn.writefile({}, "keep.txt")
 stub("keep.txt", nil, 2) -- 2 = "No"
-ops.delete()
+core.delete()
 check("delete: keeps the file when cancelled", exists("keep.txt"))
 
 -- navigation --------------------------------------------------------------
@@ -142,26 +142,26 @@ end
 
 tree({ "sub/inner.txt" })
 stub("sub/")
-ops.open()
+core.open()
 check("open: entering a directory changes cwd into it", cwd_tail() == "sub")
 check("open: listing shows the entered directory's contents", vim.tbl_contains(buf_lines(), "inner.txt"))
 
-ops.up()
+core.up()
 check("up: returns to the parent directory", vim.tbl_contains(buf_lines(), "sub/"))
 
 tree({ "file.txt" })
 stub("file.txt")
-ops.open()
+core.open()
 check("open: opening a file edits it", vim.fn.fnamemodify(vim.fn.expand("%"), ":t") == "file.txt")
 
 -- Reopening with :Butter (no path arg) must NOT reset to root: it stays in the
 -- current dir with the cursor on the file you came from.
 tree({ "sub/inner.txt" })
 stub("sub/")
-ops.open()
+core.open()
 stub("inner.txt")
-ops.open()
-ops.open_butter()
+core.open()
+core.open_butter()
 check("Butter: reopens in the current dir, not root", cwd_tail() == "sub")
 local lines = buf_lines()
 local cur = vim.api.nvim_win_get_cursor(0)[1]
