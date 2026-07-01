@@ -202,7 +202,7 @@ end
 ---@param path? string the base directory
 function M.open_butter(path)
   if path then
-    vim.cmd.cd(path)
+    vim.cmd.lcd(path)
   end
 
   local file = utils.get_current_file()
