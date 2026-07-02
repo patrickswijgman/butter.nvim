@@ -11,7 +11,7 @@ local function open()
   end
 end
 
----Register the autocommands.
+---Register autocommands.
 function M.setup()
   local group = vim.api.nvim_create_augroup("Butter", { clear = true })
 

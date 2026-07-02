@@ -97,6 +97,13 @@ stub("a/f.txt", "b/g.txt")
 core.move()
 check("move: moves across directories", exists("b/g.txt") and not exists("a/f.txt"))
 
+-- Renaming a directory must rename it, not nest it as new/old (the case
+-- ensure_dir guards against by NOT pre-creating the destination).
+tree({ "old/f.txt" })
+stub("old/", "new/")
+core.move()
+check("move: renames a directory without nesting", exists("new/f.txt") and not exists("new/old"))
+
 -- copy --------------------------------------------------------------------
 tree({ "src.txt" })
 stub("src.txt", "copy.txt")
@@ -107,6 +114,17 @@ tree({ "a/f.txt" })
 stub("a/f.txt", "b/g.txt")
 core.copy()
 check("copy: copies across directories", exists("a/f.txt") and exists("b/g.txt"))
+
+tree({ "src/f.txt" })
+stub("src/", "dst/")
+core.copy()
+check("copy: copies a directory recursively", exists("dst/f.txt") and exists("src/f.txt"))
+
+-- mv/cp run with -n; an existing destination must not be clobbered.
+tree({ "a.txt", "b.txt" })
+stub("a.txt", "b.txt")
+core.move()
+check("move: -n does not clobber an existing destination", exists("a.txt") and exists("b.txt"))
 
 -- delete ------------------------------------------------------------------
 tree({ "del.txt" })
