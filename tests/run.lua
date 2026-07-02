@@ -26,14 +26,20 @@ local function is_dir(path)
   return s ~= nil and s.type == "directory"
 end
 
--- Fresh temp dir per test, navigated into, with a Butter buffer initialized so the
--- ops' trailing update_buf()/jump_to() have a valid buffer to work on.
-local function fresh()
-  local dir = vim.fn.tempname()
-  vim.fn.mkdir(dir, "p")
-  vim.fn.chdir(dir)
+-- Fresh temp dir per test, populated from `files` (a list of paths, parents
+-- created as needed), navigated into, with Butter opened so its listing reflects
+-- the files and the ops' trailing update_buf()/jump_to() have a buffer to work on.
+local function tree(files)
+  local root = vim.fn.tempname()
+  vim.fn.mkdir(root, "p")
+  for _, rel in ipairs(files or {}) do
+    local path = root .. "/" .. rel
+    vim.fn.mkdir(vim.fn.fnamemodify(path, ":h"), "p")
+    vim.fn.writefile({}, path)
+  end
+  vim.fn.chdir(root)
   vim.cmd("Butter")
-  return dir
+  return root
 end
 
 -- Stub the interactive bits the ops read: the path under the cursor, the input
@@ -51,90 +57,6 @@ local function stub(line, input_return, confirm_return)
   end)
 end
 
--- add ---------------------------------------------------------------------
-fresh()
-stub("", "newfile.txt")
-core.add()
-check("add: creates a file", exists("newfile.txt") and not is_dir("newfile.txt"))
-
-fresh()
-stub("", "newdir/")
-core.add()
-check("add: trailing slash creates a directory", is_dir("newdir"))
-
-fresh()
-stub("", "a/b/c.txt")
-core.add()
-check("add: creates missing parent directories", exists("a/b/c.txt"))
-
--- move --------------------------------------------------------------------
-fresh()
-vim.fn.writefile({}, "old.txt")
-stub("old.txt", "new.txt")
-core.move()
-check("move: renames a file", exists("new.txt") and not exists("old.txt"))
-
-fresh()
-vim.fn.writefile({}, "f.txt")
-stub("f.txt", "sub/")
-core.move()
-check("move: moves a file into a directory", exists("sub/f.txt") and not exists("f.txt"))
-
-fresh()
-vim.fn.mkdir("a", "p")
-vim.fn.writefile({}, "a/f.txt")
-stub("a/f.txt", "b/g.txt")
-core.move()
-check("move: moves across directories", exists("b/g.txt") and not exists("a/f.txt"))
-
--- copy --------------------------------------------------------------------
-fresh()
-vim.fn.writefile({}, "src.txt")
-stub("src.txt", "copy.txt")
-core.copy()
-check("copy: duplicates a file", exists("src.txt") and exists("copy.txt"))
-
-fresh()
-vim.fn.mkdir("a", "p")
-vim.fn.writefile({}, "a/f.txt")
-stub("a/f.txt", "b/g.txt")
-core.copy()
-check("copy: copies across directories", exists("a/f.txt") and exists("b/g.txt"))
-
--- delete ------------------------------------------------------------------
-fresh()
-vim.fn.writefile({}, "del.txt")
-stub("del.txt", nil, 1) -- 1 = "Yes"
-core.delete()
-check("delete: removes a confirmed file", not exists("del.txt"))
-
-fresh()
-vim.fn.writefile({}, "keep.txt")
-stub("keep.txt", nil, 2) -- 2 = "No"
-core.delete()
-check("delete: keeps the file when cancelled", exists("keep.txt"))
-
--- navigation --------------------------------------------------------------
--- Build a fresh tree, change directory into its root, open Butter. Returns the root path.
-local function tree(spec)
-  local root = vim.fn.tempname()
-  vim.fn.mkdir(root, "p")
-  for _, rel in ipairs(spec) do
-    if rel:sub(-1) == "/" then
-      vim.fn.mkdir(root .. "/" .. rel, "p")
-    else
-      local parent = vim.fn.fnamemodify(rel, ":h")
-      if parent ~= "." then
-        vim.fn.mkdir(root .. "/" .. parent, "p")
-      end
-      vim.fn.writefile({}, root .. "/" .. rel)
-    end
-  end
-  vim.fn.chdir(root)
-  vim.cmd("Butter")
-  return root
-end
-
 local function cwd_tail()
   return vim.fn.fnamemodify(vim.fn.getcwd(), ":t")
 end
@@ -143,6 +65,61 @@ local function buf_lines()
   return vim.api.nvim_buf_get_lines(0, 0, -1, false)
 end
 
+-- add ---------------------------------------------------------------------
+tree()
+stub("", "newfile.txt")
+core.add()
+check("add: creates a file", exists("newfile.txt") and not is_dir("newfile.txt"))
+
+tree()
+stub("", "newdir/")
+core.add()
+check("add: trailing slash creates a directory", is_dir("newdir"))
+
+tree()
+stub("", "a/b/c.txt")
+core.add()
+check("add: creates missing parent directories", exists("a/b/c.txt"))
+
+-- move --------------------------------------------------------------------
+tree({ "old.txt" })
+stub("old.txt", "new.txt")
+core.move()
+check("move: renames a file", exists("new.txt") and not exists("old.txt"))
+
+tree({ "f.txt" })
+stub("f.txt", "sub/")
+core.move()
+check("move: moves a file into a directory", exists("sub/f.txt") and not exists("f.txt"))
+
+tree({ "a/f.txt" })
+stub("a/f.txt", "b/g.txt")
+core.move()
+check("move: moves across directories", exists("b/g.txt") and not exists("a/f.txt"))
+
+-- copy --------------------------------------------------------------------
+tree({ "src.txt" })
+stub("src.txt", "copy.txt")
+core.copy()
+check("copy: duplicates a file", exists("src.txt") and exists("copy.txt"))
+
+tree({ "a/f.txt" })
+stub("a/f.txt", "b/g.txt")
+core.copy()
+check("copy: copies across directories", exists("a/f.txt") and exists("b/g.txt"))
+
+-- delete ------------------------------------------------------------------
+tree({ "del.txt" })
+stub("del.txt", nil, 1) -- 1 = "Yes"
+core.delete()
+check("delete: removes a confirmed file", not exists("del.txt"))
+
+tree({ "keep.txt" })
+stub("keep.txt", nil, 2) -- 2 = "No"
+core.delete()
+check("delete: keeps the file when cancelled", exists("keep.txt"))
+
+-- navigation --------------------------------------------------------------
 tree({ "sub/inner.txt" })
 stub("sub/")
 core.open()
@@ -173,14 +150,10 @@ check("Butter: cursor lands on the file you came from", lines[cur] == "inner.txt
 -- sort --------------------------------------------------------------------
 -- utils.sort orders like `tree --dirsfirst`: directories before files at each
 -- level, each directory's contents grouped under it, root-level files last.
-local function sorted(files)
-  return utils.sort(files)
-end
-
 check(
   "sort: subdirectories before files at each level, root-level files last",
   vim.deep_equal(
-    sorted({
+    utils.sort({
       "foo.txt",
       "bar.txt",
       "b/foo.txt",
@@ -200,7 +173,7 @@ check(
 check(
   "sort: a directory's line heads its own group, subdirs before files",
   vim.deep_equal(
-    sorted({
+    utils.sort({
       "foo.txt",
       "a/",
       "b/",

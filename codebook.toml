@@ -20,6 +20,7 @@ words = [
     "patrickswijgman",
     "rawset",
     "rtp",
+    "subdirs",
     "trimempty",
     "virt",
 ]
