@@ -46,7 +46,7 @@ file you were editing. Inside the buffer:
 
 | Key               | Action                                                     |
 | ----------------- | ---------------------------------------------------------- |
-| `enter`           | Open the file or directory under the cursor                |
+| `o` / `enter`     | Open the file or directory under the cursor                |
 | `-` / `backspace` | Go up to the parent directory                              |
 | `a`               | Add a file or directory (trailing `/` creates a directory) |
 | `m`               | Move / rename                                              |
