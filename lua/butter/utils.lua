@@ -37,10 +37,9 @@ end
 ---
 ---@return Path
 local function parse_path(path)
-  local clean = path:lower():gsub("/$", "")
   return {
     is_dir = M.is_directory(path),
-    segments = vim.split(clean, "/", { plain = true }),
+    segments = vim.split(path:lower(), "/", { plain = true, trimempty = true }),
   }
 end
 
@@ -50,7 +49,7 @@ end
 ---
 ---@param files string[]
 ---
----@return string[] # the same list, now sorted
+---@return string[]
 function M.sort(files)
   ---@type Path[]
   local paths = {}

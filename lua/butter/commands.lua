@@ -2,7 +2,7 @@ local core = require("butter.core")
 
 local M = {}
 
----Open Butter
+---Open Butter.
 local function open()
   core.open_butter()
 end

@@ -2,7 +2,7 @@
 ---@field show_hidden? boolean show hidden files
 ---@field no_ignore? boolean don't use ignore files such as .gitignore
 ---@field exclude? string[] exclude a file or directory
----@field sort? fun(a: string, b: string): boolean|false custom sort, or `false` to keep fd's order; directory-first by default
+---@field sort? boolean directory-first sorting; set `false` to keep fd's order
 ---@field auto_open? boolean auto open when neovim is invoked with a directory e.g. `nvim .`
 
 local M = {}
@@ -12,7 +12,7 @@ local defaults = {
   show_hidden = false,
   no_ignore = false,
   exclude = {},
-  sort = nil,
+  sort = true,
   auto_open = false,
 }
 

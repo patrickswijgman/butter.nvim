@@ -7,7 +7,9 @@ local buf
 local ns = vim.api.nvim_create_namespace("butter")
 
 ---Construct the `fd` command with arguments and execute
----it to retrieve a sorted list of files and or directories.
+---it to retrieve a sorted list of files and/or directories.
+---
+---@return string[]
 function M.get_files()
   local command = { "fd" }
 
@@ -27,13 +29,7 @@ function M.get_files()
   local output = utils.cmd(command)
   local files = utils.split_lines(output)
 
-  if config.opts.sort == false then
-    return files
-  end
-
   if config.opts.sort then
-    table.sort(files, config.opts.sort)
-  else
     utils.sort(files)
   end
 
