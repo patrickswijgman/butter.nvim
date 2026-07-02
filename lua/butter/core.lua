@@ -34,7 +34,7 @@ function M.get_files()
   if config.opts.sort then
     table.sort(files, config.opts.sort)
   else
-    table.sort(files, utils.sort)
+    utils.sort(files)
   end
 
   return files

@@ -26,22 +26,61 @@ function M.split_lines(str)
   return vim.split(str, "\n", { trimempty = true })
 end
 
----Sort given lines directory-first.
----
----@param a string
----@param b string
----@return boolean
-function M.sort(a, b)
-  local a_path = a:lower()
-  local b_path = b:lower()
-  local a_dir = a_path:match("^(.*)/") or ""
-  local b_dir = b_path:match("^(.*)/") or ""
+---@class Path
+---@field is_dir boolean
+---@field segments string[]
 
-  if a_dir ~= b_dir then
-    return a_dir < b_dir
+---Split `path` into lowercased segments, remembering whether it's a directory.
+---Computed once per entry so the comparison below stays cheap.
+---
+---@param path string
+---
+---@return Path
+local function parse_path(path)
+  local clean = path:lower():gsub("/$", "")
+  return {
+    is_dir = M.is_directory(path),
+    segments = vim.split(clean, "/", { plain = true }),
+  }
+end
+
+---Sort `files` in place: directories before files at each level, each
+---directory's contents grouped under its own line, root-level files last
+---(like `tree --dirsfirst`). Case-insensitive.
+---
+---@param files string[]
+---
+---@return string[] # the same list, now sorted
+function M.sort(files)
+  ---@type Path[]
+  local paths = {}
+  for _, path in ipairs(files) do
+    paths[path] = parse_path(path)
   end
 
-  return a_path < b_path
+  table.sort(files, function(a, b)
+    a, b = paths[a], paths[b]
+
+    for i = 1, math.min(#a.segments, #b.segments) do
+      if a.segments[i] ~= b.segments[i] then
+        -- A segment is a directory if the path continues below it, or if it's
+        -- the last segment of a directory entry (e.g. the "a/b/" line itself).
+        -- Directories sort first.
+        local a_dir = i < #a.segments or a.is_dir
+        local b_dir = i < #b.segments or b.is_dir
+        if a_dir ~= b_dir then
+          return a_dir
+        end
+
+        return a.segments[i] < b.segments[i]
+      end
+    end
+
+    -- One path is an ancestor of the other; the ancestor comes first.
+    return #a.segments < #b.segments
+  end)
+
+  return files
 end
 
 ---Path of the current buffer's file, relative to the working directory.

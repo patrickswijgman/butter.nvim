@@ -3,10 +3,13 @@
 -- Run from the repo root:
 -- `nvim --headless --noplugin -u NONE --cmd "set rtp+=$PWD" -l tests/run.lua`
 
-require("butter").setup()
 local core = require("butter.core")
+local utils = require("butter.utils")
+
+require("butter").setup()
 
 local failures = 0
+
 local function check(name, ok)
   print((ok and "ok   - " or "FAIL - ") .. name)
   if not ok then
@@ -112,7 +115,7 @@ core.delete()
 check("delete: keeps the file when cancelled", exists("keep.txt"))
 
 -- navigation --------------------------------------------------------------
--- Build a fresh tree, chdir into its root, open Butter. Returns the root path.
+-- Build a fresh tree, change directory into its root, open Butter. Returns the root path.
 local function tree(spec)
   local root = vim.fn.tempname()
   vim.fn.mkdir(root, "p")
@@ -166,6 +169,59 @@ check("Butter: reopens in the current dir, not root", cwd_tail() == "sub")
 local lines = buf_lines()
 local cur = vim.api.nvim_win_get_cursor(0)[1]
 check("Butter: cursor lands on the file you came from", lines[cur] == "inner.txt")
+
+-- sort --------------------------------------------------------------------
+-- utils.sort orders like `tree --dirsfirst`: directories before files at each
+-- level, each directory's contents grouped under it, root-level files last.
+local function sorted(files)
+  return utils.sort(files)
+end
+
+check(
+  "sort: subdirectories before files at each level, root-level files last",
+  vim.deep_equal(
+    sorted({
+      "foo.txt",
+      "bar.txt",
+      "b/foo.txt",
+      "a/b/foo.txt",
+      "a/foo.txt",
+    }),
+    {
+      "a/b/foo.txt",
+      "a/foo.txt",
+      "b/foo.txt",
+      "bar.txt",
+      "foo.txt",
+    }
+  )
+)
+
+check(
+  "sort: a directory's line heads its own group, subdirs before files",
+  vim.deep_equal(
+    sorted({
+      "foo.txt",
+      "a/",
+      "b/",
+      "a/b/",
+      "a/foo.txt",
+      "a/b/foo.txt",
+      "b/foo.txt",
+      "bar.txt",
+    }),
+    {
+      "a/",
+      "a/b/",
+      "a/b/foo.txt",
+      "a/foo.txt",
+      "b/",
+      "b/foo.txt",
+      "bar.txt",
+      "foo.txt",
+    }
+  )
+)
 
 print(("\n%d failed"):format(failures))
 vim.cmd(failures == 0 and "qa!" or "cq!")
