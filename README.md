@@ -12,7 +12,7 @@ A minimal, buttery-smooth file explorer for Neovim. Inspired by [oil.nvim](https
 ## Requirements
 
 - Neovim 0.10+ (uses `vim.system`)
-- [fd](https://github.com/sharkdp/fd)
+- [fd](https://github.com/sharkdp/fd) (used for getting the files and directories list)
 - Unix commands: `mkdir`, `touch`, `mv`, `cp`, `rm` (used for file operations)
 - [nvim-web-devicons](https://github.com/nvim-tree/nvim-web-devicons) (optional, for file icons)
 
@@ -52,6 +52,9 @@ file you were editing. Inside the buffer:
 | `m`               | Move / rename                                              |
 | `c`               | Copy                                                       |
 | `d`               | Delete (with confirmation)                                 |
+
+Navigating into or out of a directory changes the window's working directory
+(via `:lcd`), so it stays in sync with what you're browsing.
 
 Add it as a keymap in your config:
 
