@@ -6,9 +6,6 @@ local M = {}
 local buf
 local ns = vim.api.nvim_create_namespace("butter")
 
----Construct the `fd` command with arguments and execute
----it to retrieve a sorted list of files and/or directories.
----
 ---@return string[]
 function M.get_files()
   local command = { "fd" }
@@ -36,8 +33,6 @@ function M.get_files()
   return files
 end
 
----Move the cursor to the line matching `path`, if present.
----
 ---@param path string
 function M.jump_to(path)
   local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
@@ -49,7 +44,6 @@ function M.jump_to(path)
   end
 end
 
----Create the scratch buffer and show it in the current window.
 function M.create_buf_in_current_win()
   buf = vim.api.nvim_create_buf(false, true)
   vim.bo[buf].buftype = "nofile"
@@ -57,7 +51,6 @@ function M.create_buf_in_current_win()
   vim.api.nvim_set_current_buf(buf)
 end
 
----Refresh the buffer with the current file list and its icons/highlights.
 function M.update_buf()
   local files = M.get_files()
   table.insert(files, 1, "../")
@@ -87,7 +80,6 @@ function M.update_buf()
   end
 end
 
----Edit the file under the cursor; a directory opens a Butter buffer inside it.
 function M.open()
   local path = vim.api.nvim_get_current_line()
   if path == "" then
@@ -101,8 +93,6 @@ function M.open()
   end
 end
 
----Prompt for a path and create it. A trailing slash makes a directory,
----otherwise a file (with any missing parent directories).
 function M.add()
   local path = vim.api.nvim_get_current_line()
 
@@ -130,7 +120,6 @@ function M.add()
   M.jump_to(input)
 end
 
----Move/rename the file under the cursor to a prompted destination.
 function M.move()
   local src = vim.api.nvim_get_current_line()
   local dst = vim.fn.input({ prompt = "Move: ", default = src, completion = "file" })
@@ -145,7 +134,6 @@ function M.move()
   M.jump_to(dst)
 end
 
----Copy the file/directory under the cursor to a prompted destination.
 function M.copy()
   local src = vim.api.nvim_get_current_line()
   local dst = vim.fn.input({ prompt = "Copy: ", default = src, completion = "file" })
@@ -160,7 +148,6 @@ function M.copy()
   M.jump_to(dst)
 end
 
----Delete the file/directory under the cursor after a confirmation prompt.
 function M.delete()
   local path = vim.api.nvim_get_current_line()
   local result = vim.fn.confirm(("Delete: %s ?"):format(path), "&Yes\n&No", 2)
@@ -173,12 +160,10 @@ function M.delete()
   M.update_buf()
 end
 
----Open Butter in the parent directory.
 function M.up()
   M.open_butter("../")
 end
 
----Set the buffer-local keymaps for the file operations.
 function M.set_buf_keymaps()
   local opts = { buffer = buf, nowait = true }
   vim.keymap.set("n", "<cr>", M.open, opts)
@@ -191,9 +176,7 @@ function M.set_buf_keymaps()
   vim.keymap.set("n", "d", M.delete, opts)
 end
 
----Open Butter in the current window, cursor on the current file.
----
----@param path? string the base directory
+---@param path? string
 function M.open_butter(path)
   if path then
     vim.cmd.lcd(path)

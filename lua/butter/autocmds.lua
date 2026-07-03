@@ -3,7 +3,6 @@ local core = require("butter.core")
 
 local M = {}
 
----Open Butter when the first argument of Neovim is a directory.
 local function open()
   local arg = vim.fn.argv()[1]
   if arg and vim.fn.isdirectory(arg) == 1 then
@@ -11,12 +10,15 @@ local function open()
   end
 end
 
----Register autocommands.
 function M.setup()
   local group = vim.api.nvim_create_augroup("Butter", { clear = true })
 
   if config.opts.auto_open then
-    vim.api.nvim_create_autocmd("VimEnter", { callback = open, desc = "Open Butter when Neovim is opened with a directory", group = group })
+    vim.api.nvim_create_autocmd("VimEnter", {
+      callback = open,
+      desc = "Open Butter when Neovim is opened with a directory",
+      group = group,
+    })
   end
 end
 

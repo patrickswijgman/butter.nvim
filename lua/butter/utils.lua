@@ -1,11 +1,8 @@
 local M = {}
 
----Run a system command synchronously.
----
----@param command string[] command and args
----@param stdin? string|string[] optional input for the command
----
----@return string # command output or empty string on error
+---@param command string[]
+---@param stdin? string|string[]
+---@return string
 function M.cmd(command, stdin)
   local result = vim.system(command, { text = true, stdin = stdin }):wait()
 
@@ -17,10 +14,7 @@ function M.cmd(command, stdin)
   return result.stdout
 end
 
----Split string on new lines.
----
----@param str string input string
----
+---@param str string
 ---@return string[]
 function M.split_lines(str)
   return vim.split(str, "\n", { trimempty = true })
@@ -30,11 +24,8 @@ end
 ---@field is_dir boolean
 ---@field segments string[]
 
----Split `path` into lowercased segments, remembering whether it's a directory.
 ---Computed once per entry so the comparison below stays cheap.
----
 ---@param path string
----
 ---@return Path
 local function parse_path(path)
   return {
@@ -43,12 +34,7 @@ local function parse_path(path)
   }
 end
 
----Sort `files` in place: directories before files at each level, each
----directory's contents grouped under its own line, root-level files last
----(like `tree --dirsfirst`). Case-insensitive.
----
 ---@param files string[]
----
 ---@return string[]
 function M.sort(files)
   ---@type Path[]
@@ -82,37 +68,27 @@ function M.sort(files)
   return files
 end
 
----Path of the current buffer's file, relative to the working directory.
----
 ---@return string
 function M.get_current_file()
   return vim.fn.fnamemodify(vim.fn.expand("%"), ":.")
 end
 
----Parent directory of `path`.
----
 ---@param path string
----
 ---@return string
 function M.get_parent_dir(path)
   return vim.fn.fnamemodify(path, ":h")
 end
 
----Whether `path` is a directory, i.e. `fd` printed it with a trailing slash.
----
 ---@param path string
----
 ---@return boolean
 function M.is_directory(path)
   return vim.endswith(path, "/")
 end
 
----Create the directory that must exist before mv/cp `src` to `dst`.
 ---A file going into `b/` needs `b` created; a dir renamed to `b/` must NOT
 ---have `b` pre-created, or mv would nest it as `b/<src>` instead of renaming.
----
----@param src string source file or directory
----@param dst string destination file or directory
+---@param src string
+---@param dst string
 function M.ensure_dir(src, dst)
   local dir
 
@@ -125,13 +101,10 @@ function M.ensure_dir(src, dst)
   M.cmd({ "mkdir", "-p", dir })
 end
 
----Resolve the icon and highlight group for a path. Requires nvim-web-devicons;
----returns nil when it isn't installed, so no icon is shown.
----
+---Requires nvim-web-devicons; returns nil when it isn't installed, so no icon is shown.
 ---@param path string
----
 ---@return string? icon
----@return string? hl highlight group
+---@return string? hl
 function M.get_icon(path)
   local ok, devicons = pcall(require, "nvim-web-devicons")
   if not ok then

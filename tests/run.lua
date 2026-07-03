@@ -1,5 +1,3 @@
--- Headless test runner for Butter's file operations.
---
 -- Run from the repo root:
 -- `nvim --headless --noplugin -u NONE --cmd "set rtp+=$PWD" -l tests/run.lua`
 
@@ -33,7 +31,7 @@ local function tree(files)
   local root = vim.fn.tempname()
   vim.fn.mkdir(root, "p")
   for _, rel in ipairs(files or {}) do
-    local path = root .. "/" .. rel
+    local path = vim.fs.joinpath(root, rel)
     vim.fn.mkdir(vim.fn.fnamemodify(path, ":h"), "p")
     vim.fn.writefile({}, path)
   end
@@ -42,10 +40,10 @@ local function tree(files)
   return root
 end
 
--- Stub the interactive bits the ops read: the path under the cursor, the input
+-- Stub the interactive functions the ops read: the path under the cursor, the input
 -- prompt (move/copy/add destination) and the delete confirmation. rawset is
 -- needed for vim.fn, whose real entries come from a metatable __index.
--- input_default captures the prompt's prefilled value for add's default-dir test.
+-- input_default captures the prompt's prefilled value for add function default-dir test.
 local input_default
 local function stub(line, input_return, confirm_return)
   input_default = nil
