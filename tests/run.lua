@@ -45,11 +45,15 @@ end
 -- Stub the interactive bits the ops read: the path under the cursor, the input
 -- prompt (move/copy/add destination) and the delete confirmation. rawset is
 -- needed for vim.fn, whose real entries come from a metatable __index.
+-- input_default captures the prompt's prefilled value for add's default-dir test.
+local input_default
 local function stub(line, input_return, confirm_return)
+  input_default = nil
   rawset(vim.api, "nvim_get_current_line", function()
     return line
   end)
-  rawset(vim.fn, "input", function()
+  rawset(vim.fn, "input", function(opts)
+    input_default = opts.default
     return input_return
   end)
   rawset(vim.fn, "confirm", function()
@@ -80,6 +84,16 @@ tree()
 stub("", "a/b/c.txt")
 core.add()
 check("add: creates missing parent directories", exists("a/b/c.txt"))
+
+tree({ "foo/x.txt" })
+stub("foo/", "foo/new.txt")
+core.add()
+check("add: prefills the directory under the cursor", input_default == "foo/")
+
+tree({ "root.txt" })
+stub("root.txt", "root.txt")
+core.add()
+check("add: root-level file prefills no directory", input_default == "")
 
 -- move --------------------------------------------------------------------
 tree({ "old.txt" })
