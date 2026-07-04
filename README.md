@@ -6,7 +6,7 @@ A minimal, buttery-smooth file explorer for Neovim. Inspired by [oil.nvim](https
 
 # Features
 
-- File operations (create, ename, move, copy, delete)
+- File operations (create, rename, move, copy, delete)
 - Open as the default file explorer when invoked e.g. as `nvim .`
 
 ## Requirements
