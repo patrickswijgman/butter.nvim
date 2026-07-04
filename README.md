@@ -4,10 +4,10 @@ A minimal, buttery-smooth file explorer for Neovim. Inspired by [oil.nvim](https
 
 ![Butter neovim plugin preview image](preview.png)
 
-## Differences with oil.nvim
+# Features
 
-- Butter has keymaps for file operations instead of editing the buffer directly.
-- Butter shows all files and folders at once, instead of needing to navigate through folders.
+- File operations (create, ename, move, copy, delete)
+- Open as the default file explorer when invoked e.g. as `nvim .`
 
 ## Requirements
 
@@ -68,16 +68,16 @@ vim.keymap.set("n", "<leader>e", "<cmd>Butter<cr>", { desc = "Open file explorer
 
 ```lua
 require("butter").setup({
-  show_hidden = false, -- pass --hidden to fd
-  no_ignore = false,   -- pass --no-ignore to fd (don't use .gitignore etc.)
+  show_hidden = false, -- show hidden files, e.g. `.env`
+  no_ignore = false,   -- also show files ignored by .gitignore etc.
   exclude = {},        -- paths to exclude, e.g. { ".git", "node_modules", "dist" }
-  sort = true,         -- directory-first sorting; set to false to keep fd's order
+  sort = true,         -- directory-first sorting; set to false to keep the original order
   auto_open = false,   -- open Butter when Neovim starts with a directory, e.g. `nvim .`
 })
 ```
 
 Note that if you set `auto_open` to `true`, be sure to disable `netrw` (Neovim's builtin file explorer) to prevent race conditions.
-Add this to where you set your options for Neovim:
+Add this to your config:
 
 ```lua
 vim.g.loaded_netrw = 1
