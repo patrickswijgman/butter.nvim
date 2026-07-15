@@ -54,6 +54,7 @@ end
 function M.update_buf()
   local files = M.get_files()
   table.insert(files, 1, "../")
+  table.insert(files, 1, "./")
 
   vim.bo[buf].modifiable = true
   vim.api.nvim_buf_set_lines(buf, 0, -1, false, files)
