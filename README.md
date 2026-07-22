@@ -4,7 +4,7 @@ A minimal, buttery-smooth file explorer for Neovim. Inspired by [oil.nvim](https
 
 ![Butter neovim plugin preview image](preview.png)
 
-# Features
+## Features
 
 - File operations (create, rename, move, copy, delete)
 - Open as the default file explorer when invoked e.g. as `nvim .`
