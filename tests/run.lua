@@ -97,7 +97,6 @@ stub("root.txt", "root.txt")
 press("a")
 check("add: root-level file prefills no directory", input_default == "")
 
--- A dash-prefixed name must not be parsed as a command option (needs `--`).
 tree()
 stub("", "-dash.txt")
 press("a")
@@ -122,8 +121,6 @@ stub("a/f.txt", "b/g.txt")
 press("m")
 check("move: moves across directories", exists("b/g.txt") and not exists("a/f.txt"))
 
--- Renaming a directory must rename it, not nest it as new/old (the case
--- ensure_dir guards against by NOT pre-creating the destination).
 tree({ "old/f.txt" })
 stub("old/", "new/")
 press("m")
@@ -158,7 +155,6 @@ stub("src.txt", "-dash.txt")
 press("c")
 check("copy: handles a dash-prefixed destination", exists("src.txt") and exists("-dash.txt"))
 
--- mv/cp run with -n; an existing destination must not be clobbered.
 tree({ "a.txt", "b.txt" })
 stub("a.txt", "b.txt")
 press("m")
@@ -169,12 +165,12 @@ check("move: -n does not clobber an existing destination", exists("a.txt") and e
 ----------------
 
 tree({ "del.txt" })
-stub("del.txt", nil, 1) -- 1 = "Yes"
+stub("del.txt", nil, 1)
 press("d")
 check("delete: removes a confirmed file", not exists("del.txt"))
 
 tree({ "keep.txt" })
-stub("keep.txt", nil, 2) -- 2 = "No"
+stub("keep.txt", nil, 2)
 press("d")
 check("delete: keeps the file when cancelled", exists("keep.txt"))
 
@@ -220,8 +216,6 @@ check("open: pressing <cr> on a directory does nothing", vim.api.nvim_get_curren
 --------------
 ---- sort ----
 --------------
--- The listing orders like `tree --dirsfirst`: a directory's line heads its own
--- group, subdirectories before files at each level, root-level files last.
 
 tree({
   "foo.txt",
