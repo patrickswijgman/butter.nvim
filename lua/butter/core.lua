@@ -88,8 +88,7 @@ local function add()
   if utils.is_directory(path) then
     dir = path
   else
-    local parent_dir = utils.get_parent_dir(path)
-    dir = parent_dir == "." and "" or parent_dir .. "/"
+    dir = utils.get_parent_dir(path) or ""
   end
 
   local input = vim.fn.input({ prompt = "Add: ", default = dir, completion = "file" })
@@ -97,10 +96,8 @@ local function add()
     return
   end
 
-  if utils.is_directory(input) then
-    utils.cmd({ "mkdir", "-p", "--", input })
-  else
-    utils.cmd({ "mkdir", "-p", "--", utils.get_parent_dir(input) })
+  utils.ensure_dir("", input)
+  if not utils.is_directory(input) then
     utils.cmd({ "touch", "--", input })
   end
 

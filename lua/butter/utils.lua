@@ -73,16 +73,16 @@ function M.get_current_file()
   return vim.fn.fnamemodify(vim.fn.expand("%"), ":.")
 end
 
----Parent directory of `path`. A trailing slash is stripped first, so the parent
----of `new/` is `.` (its containing dir), not `new`.
 ---@param path string
----@return string
+---@return string?
 function M.get_parent_dir(path)
-  return vim.fn.fnamemodify((path:gsub("/+$", "")), ":h")
+  local dir = vim.fn.fnamemodify((path:gsub("/+$", "")), ":h")
+  if dir == "." then
+    return nil
+  end
+  return dir .. "/"
 end
 
----A trailing slash marks a directory. fd emits it, users type it for
----"into this dir" destinations, and it drives display and sorting.
 ---@param path string
 ---@return boolean
 function M.is_directory(path)
@@ -101,7 +101,9 @@ function M.ensure_dir(src, dst)
     dir = M.get_parent_dir(dst)
   end
 
-  M.cmd({ "mkdir", "-p", "--", dir })
+  if dir then
+    M.cmd({ "mkdir", "-p", "--", dir })
+  end
 end
 
 ---Requires nvim-web-devicons; returns nil when it isn't installed, so no icon is shown.
