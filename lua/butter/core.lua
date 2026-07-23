@@ -6,26 +6,12 @@ local M = {}
 local buf
 local ns = vim.api.nvim_create_namespace("butter")
 
----@class Path
----@field is_dir boolean
----@field segments string[]
-
----Computed once per entry so the comparison below stays cheap.
----@param path string
----@return Path
-local function parse_path(path)
-  return {
-    is_dir = utils.is_directory(path),
-    segments = vim.split(path:lower(), "/", { plain = true, trimempty = true }),
-  }
-end
-
 ---@param files string[]
 ---@return string[]
 local function sort_files(files)
   local paths = {} ---@type Path[]
   for _, path in ipairs(files) do
-    paths[path] = parse_path(path)
+    paths[path] = utils.parse_path(path)
   end
 
   table.sort(files, function(a, b)

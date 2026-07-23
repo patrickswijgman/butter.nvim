@@ -59,6 +59,20 @@ function M.ensure_dir(src, dst)
   end
 end
 
+---@class Path
+---@field is_dir boolean
+---@field segments string[]
+
+---Computed once per entry so the comparison below stays cheap.
+---@param path string
+---@return Path
+function M.parse_path(path)
+  return {
+    is_dir = M.is_directory(path),
+    segments = vim.split(path:lower(), "/", { plain = true, trimempty = true }),
+  }
+end
+
 ---Requires nvim-web-devicons; returns nil when it isn't installed, so no icon is shown.
 ---@param path string
 ---@return string? icon
