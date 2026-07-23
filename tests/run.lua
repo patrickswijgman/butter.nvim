@@ -202,6 +202,11 @@ core.open_butter("sub/")
 local cur = vim.api.nvim_win_get_cursor(0)[1]
 check("open_butter: jumps to a directory entry", buf_lines()[cur] == "sub/")
 
+tree({ "aaa/x.txt", "sub/inner.txt" })
+core.open_butter("sub")
+cur = vim.api.nvim_win_get_cursor(0)[1]
+check("open_butter: jumps to a directory given without a trailing slash", buf_lines()[cur] == "sub/")
+
 tree({ "file.txt" })
 stub("file.txt")
 press("<cr>")

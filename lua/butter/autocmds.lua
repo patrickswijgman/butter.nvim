@@ -6,8 +6,7 @@ local M = {}
 local function open()
   local arg = vim.fn.argv()[1]
   if arg and vim.fn.isdirectory(arg) == 1 then
-    local dir = arg:gsub("/?$", "/")
-    core.open_butter(dir)
+    core.open_butter(arg)
   end
 end
 

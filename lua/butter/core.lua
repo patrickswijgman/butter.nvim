@@ -164,10 +164,14 @@ end
 
 ---@param entry? string entry to place the cursor on; defaults to the current file
 function M.open_butter(entry)
-  entry = entry or utils.get_current_file()
+  local target = entry or utils.get_current_file()
+  if vim.fn.isdirectory(target) == 1 then
+    target = vim.fs.normalize(target) .. "/"
+  end
+
   setup_buf()
   update_buf()
-  jump_to(entry)
+  jump_to(target)
 end
 
 return M
