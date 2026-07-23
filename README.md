@@ -77,8 +77,7 @@ require("butter").setup({
 })
 ```
 
-Note that if you set `auto_open` to `true`, be sure to disable `netrw` (Neovim's builtin file explorer) to prevent race conditions.
-Add this to your config:
+Note that if you set `auto_open` to `true`, be sure to disable `netrw` (Neovim's builtin file explorer) to prevent race conditions, add this to your config:
 
 ```lua
 vim.g.loaded_netrw = 1
