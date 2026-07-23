@@ -1,5 +1,4 @@
 words = [
-    "Neovim's",
     "autocmd",
     "autocmds",
     "autocommands",
@@ -14,8 +13,10 @@ words = [
     "metatable",
     "mkdir",
     "neovim",
+    "neovim's",
     "netrw",
     "noplugin",
+    "nowait",
     "nvim",
     "patrickswijgman",
     "rawset",

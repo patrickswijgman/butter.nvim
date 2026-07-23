@@ -37,14 +37,14 @@ end
 ---@param files string[]
 ---@return string[]
 function M.sort(files)
-  ---@type Path[]
-  local paths = {}
+  local paths = {} ---@type Path[]
   for _, path in ipairs(files) do
     paths[path] = parse_path(path)
   end
 
   table.sort(files, function(a, b)
-    a, b = paths[a], paths[b]
+    a = paths[a]
+    b = paths[b]
 
     for i = 1, math.min(#a.segments, #b.segments) do
       if a.segments[i] ~= b.segments[i] then
@@ -73,12 +73,16 @@ function M.get_current_file()
   return vim.fn.fnamemodify(vim.fn.expand("%"), ":.")
 end
 
+---Parent directory of `path`. A trailing slash is stripped first, so the parent
+---of `new/` is `.` (its containing dir), not `new`.
 ---@param path string
 ---@return string
 function M.get_parent_dir(path)
-  return vim.fn.fnamemodify(path, ":h")
+  return vim.fn.fnamemodify((path:gsub("/+$", "")), ":h")
 end
 
+---A trailing slash marks a directory. fd emits it, users type it for
+---"into this dir" destinations, and it drives display and sorting.
 ---@param path string
 ---@return boolean
 function M.is_directory(path)
@@ -91,14 +95,13 @@ end
 ---@param dst string
 function M.ensure_dir(src, dst)
   local dir
-
   if M.is_directory(dst) and not M.is_directory(src) then
-    dir = dst:gsub("/+$", "")
+    dir = dst
   else
-    dir = M.get_parent_dir(dst:gsub("/+$", ""))
+    dir = M.get_parent_dir(dst)
   end
 
-  M.cmd({ "mkdir", "-p", dir })
+  M.cmd({ "mkdir", "-p", "--", dir })
 end
 
 ---Requires nvim-web-devicons; returns nil when it isn't installed, so no icon is shown.

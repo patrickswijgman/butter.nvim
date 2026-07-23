@@ -7,7 +7,7 @@ local buf
 local ns = vim.api.nvim_create_namespace("butter")
 
 ---@return string[]
-function M.get_files()
+local function get_files()
   local command = { "fd" }
 
   if config.opts.show_hidden then
@@ -34,7 +34,7 @@ function M.get_files()
 end
 
 ---@param path string
-function M.jump_to(path)
+local function jump_to(path)
   local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
   for i, line in ipairs(lines) do
     if line == path then
@@ -44,17 +44,8 @@ function M.jump_to(path)
   end
 end
 
-function M.create_buf_in_current_win()
-  buf = vim.api.nvim_create_buf(false, true)
-  vim.bo[buf].buftype = "nofile"
-  vim.bo[buf].bufhidden = "wipe"
-  vim.api.nvim_set_current_buf(buf)
-end
-
-function M.update_buf()
-  local files = M.get_files()
-  table.insert(files, 1, "../")
-  table.insert(files, 1, "./")
+local function update_buf()
+  local files = get_files()
 
   vim.bo[buf].modifiable = true
   vim.api.nvim_buf_set_lines(buf, 0, -1, false, files)
@@ -81,20 +72,16 @@ function M.update_buf()
   end
 end
 
-function M.open()
+local function open()
   local path = vim.api.nvim_get_current_line()
-  if path == "" then
+  if path == "" or utils.is_directory(path) then
     return
   end
 
-  if utils.is_directory(path) then
-    M.open_butter(path)
-  else
-    vim.cmd.edit(path)
-  end
+  vim.cmd.edit(path)
 end
 
-function M.add()
+local function add()
   local path = vim.api.nvim_get_current_line()
 
   local dir
@@ -102,7 +89,7 @@ function M.add()
     dir = path
   else
     local parent_dir = utils.get_parent_dir(path)
-    dir = parent_dir == "." and "" or ("%s/"):format(parent_dir)
+    dir = parent_dir == "." and "" or parent_dir .. "/"
   end
 
   local input = vim.fn.input({ prompt = "Add: ", default = dir, completion = "file" })
@@ -111,17 +98,17 @@ function M.add()
   end
 
   if utils.is_directory(input) then
-    utils.cmd({ "mkdir", "-p", input })
+    utils.cmd({ "mkdir", "-p", "--", input })
   else
-    utils.cmd({ "mkdir", "-p", utils.get_parent_dir(input) })
-    utils.cmd({ "touch", input })
+    utils.cmd({ "mkdir", "-p", "--", utils.get_parent_dir(input) })
+    utils.cmd({ "touch", "--", input })
   end
 
-  M.update_buf()
-  M.jump_to(input)
+  update_buf()
+  jump_to(input)
 end
 
-function M.move()
+local function move()
   local src = vim.api.nvim_get_current_line()
   local dst = vim.fn.input({ prompt = "Move: ", default = src, completion = "file" })
 
@@ -130,12 +117,12 @@ function M.move()
   end
 
   utils.ensure_dir(src, dst)
-  utils.cmd({ "mv", "-n", src, dst })
-  M.update_buf()
-  M.jump_to(dst)
+  utils.cmd({ "mv", "-n", "--", src, dst })
+  update_buf()
+  jump_to(dst)
 end
 
-function M.copy()
+local function copy()
   local src = vim.api.nvim_get_current_line()
   local dst = vim.fn.input({ prompt = "Copy: ", default = src, completion = "file" })
 
@@ -144,12 +131,12 @@ function M.copy()
   end
 
   utils.ensure_dir(src, dst)
-  utils.cmd({ "cp", "-rn", src, dst })
-  M.update_buf()
-  M.jump_to(dst)
+  utils.cmd({ "cp", "-rn", "--", src, dst })
+  update_buf()
+  jump_to(dst)
 end
 
-function M.delete()
+local function delete()
   local path = vim.api.nvim_get_current_line()
   local result = vim.fn.confirm(("Delete: %s ?"):format(path), "&Yes\n&No", 2)
 
@@ -157,37 +144,32 @@ function M.delete()
     return
   end
 
-  utils.cmd({ "rm", "-rf", path })
-  M.update_buf()
+  utils.cmd({ "rm", "-rf", "--", path })
+  update_buf()
 end
 
-function M.up()
-  M.open_butter("../")
-end
+local function setup_buf()
+  if not buf or not vim.api.nvim_buf_is_valid(buf) then
+    buf = vim.api.nvim_create_buf(false, true)
 
-function M.set_buf_keymaps()
-  local opts = { buffer = buf, nowait = true }
-  vim.keymap.set("n", "<cr>", M.open, opts)
-  vim.keymap.set("n", "<bs>", M.up, opts)
-  vim.keymap.set("n", "-", M.up, opts)
-  vim.keymap.set("n", "o", M.open, opts)
-  vim.keymap.set("n", "a", M.add, opts)
-  vim.keymap.set("n", "m", M.move, opts)
-  vim.keymap.set("n", "c", M.copy, opts)
-  vim.keymap.set("n", "d", M.delete, opts)
-end
-
----@param path? string
-function M.open_butter(path)
-  if path then
-    vim.cmd.lcd(path)
+    local keymap_opts = { buffer = buf, nowait = true }
+    vim.keymap.set("n", "<cr>", open, keymap_opts)
+    vim.keymap.set("n", "o", open, keymap_opts)
+    vim.keymap.set("n", "a", add, keymap_opts)
+    vim.keymap.set("n", "m", move, keymap_opts)
+    vim.keymap.set("n", "c", copy, keymap_opts)
+    vim.keymap.set("n", "d", delete, keymap_opts)
   end
 
-  local file = utils.get_current_file()
-  M.create_buf_in_current_win()
-  M.set_buf_keymaps()
-  M.update_buf()
-  M.jump_to(file)
+  vim.api.nvim_set_current_buf(buf)
+end
+
+---@param entry? string entry to place the cursor on; defaults to the current file
+function M.open_butter(entry)
+  entry = entry or utils.get_current_file()
+  setup_buf()
+  update_buf()
+  jump_to(entry)
 end
 
 return M

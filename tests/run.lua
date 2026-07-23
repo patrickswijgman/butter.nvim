@@ -1,5 +1,5 @@
 -- Run from the repo root:
--- `nvim --headless --noplugin -u NONE --cmd "set rtp+=$PWD" -l tests/run.lua`
+-- `nvim --headless --noplugin -u NONE --cmd "set rtp^=$PWD" -l tests/run.lua`
 
 local core = require("butter.core")
 local utils = require("butter.utils")
@@ -25,7 +25,7 @@ local function is_dir(path)
 end
 
 -- Fresh temp dir per test, populated from `files` (a list of paths, parents
--- created as needed), navigated into, with Butter opened so its listing reflects
+-- created as needed), cwd set to it, with Butter opened so its listing reflects
 -- the files and the ops' trailing update_buf()/jump_to() have a buffer to work on.
 local function tree(files)
   local root = vim.fn.tempname()
@@ -35,7 +35,7 @@ local function tree(files)
     vim.fn.mkdir(vim.fn.fnamemodify(path, ":h"), "p")
     vim.fn.writefile({}, path)
   end
-  vim.fn.chdir(root)
+  vim.cmd.lcd(root)
   vim.cmd("Butter")
   return root
 end
@@ -59,127 +59,166 @@ local function stub(line, input_return, confirm_return)
   end)
 end
 
-local function cwd_tail()
-  return vim.fn.fnamemodify(vim.fn.getcwd(), ":t")
+-- Drive butter through its buffer keymaps, the way a user does ("m" applies
+-- mappings, "x" executes now). The stubs make cursor position irrelevant.
+local function press(key)
+  vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(key, true, false, true), "mx", false)
 end
 
 local function buf_lines()
   return vim.api.nvim_buf_get_lines(0, 0, -1, false)
 end
 
--- add ---------------------------------------------------------------------
+-------------
+---- add ----
+-------------
+
 tree()
 stub("", "newfile.txt")
-core.add()
+press("a")
 check("add: creates a file", exists("newfile.txt") and not is_dir("newfile.txt"))
 
 tree()
 stub("", "newdir/")
-core.add()
+press("a")
 check("add: trailing slash creates a directory", is_dir("newdir"))
 
 tree()
 stub("", "a/b/c.txt")
-core.add()
+press("a")
 check("add: creates missing parent directories", exists("a/b/c.txt"))
 
 tree({ "foo/x.txt" })
 stub("foo/", "foo/new.txt")
-core.add()
+press("a")
 check("add: prefills the directory under the cursor", input_default == "foo/")
 
 tree({ "root.txt" })
 stub("root.txt", "root.txt")
-core.add()
+press("a")
 check("add: root-level file prefills no directory", input_default == "")
 
--- move --------------------------------------------------------------------
+-- A dash-prefixed name must not be parsed as a command option (needs `--`).
+tree()
+stub("", "-dash.txt")
+press("a")
+check("add: handles a dash-prefixed filename", exists("-dash.txt"))
+
+--------------
+---- move ----
+--------------
+
 tree({ "old.txt" })
 stub("old.txt", "new.txt")
-core.move()
+press("m")
 check("move: renames a file", exists("new.txt") and not exists("old.txt"))
 
 tree({ "f.txt" })
 stub("f.txt", "sub/")
-core.move()
+press("m")
 check("move: moves a file into a directory", exists("sub/f.txt") and not exists("f.txt"))
 
 tree({ "a/f.txt" })
 stub("a/f.txt", "b/g.txt")
-core.move()
+press("m")
 check("move: moves across directories", exists("b/g.txt") and not exists("a/f.txt"))
 
 -- Renaming a directory must rename it, not nest it as new/old (the case
 -- ensure_dir guards against by NOT pre-creating the destination).
 tree({ "old/f.txt" })
 stub("old/", "new/")
-core.move()
+press("m")
 check("move: renames a directory without nesting", exists("new/f.txt") and not exists("new/old"))
 
--- copy --------------------------------------------------------------------
+tree({ "old.txt" })
+stub("old.txt", "-dash.txt")
+press("m")
+check("move: handles a dash-prefixed destination", exists("-dash.txt") and not exists("old.txt"))
+
+--------------
+---- copy ----
+--------------
+
 tree({ "src.txt" })
 stub("src.txt", "copy.txt")
-core.copy()
+press("c")
 check("copy: duplicates a file", exists("src.txt") and exists("copy.txt"))
 
 tree({ "a/f.txt" })
 stub("a/f.txt", "b/g.txt")
-core.copy()
+press("c")
 check("copy: copies across directories", exists("a/f.txt") and exists("b/g.txt"))
 
 tree({ "src/f.txt" })
 stub("src/", "dst/")
-core.copy()
+press("c")
 check("copy: copies a directory recursively", exists("dst/f.txt") and exists("src/f.txt"))
+
+tree({ "src.txt" })
+stub("src.txt", "-dash.txt")
+press("c")
+check("copy: handles a dash-prefixed destination", exists("src.txt") and exists("-dash.txt"))
 
 -- mv/cp run with -n; an existing destination must not be clobbered.
 tree({ "a.txt", "b.txt" })
 stub("a.txt", "b.txt")
-core.move()
+press("m")
 check("move: -n does not clobber an existing destination", exists("a.txt") and exists("b.txt"))
 
--- delete ------------------------------------------------------------------
+----------------
+---- delete ----
+----------------
+
 tree({ "del.txt" })
 stub("del.txt", nil, 1) -- 1 = "Yes"
-core.delete()
+press("d")
 check("delete: removes a confirmed file", not exists("del.txt"))
 
 tree({ "keep.txt" })
 stub("keep.txt", nil, 2) -- 2 = "No"
-core.delete()
+press("d")
 check("delete: keeps the file when cancelled", exists("keep.txt"))
 
--- navigation --------------------------------------------------------------
-tree({ "sub/inner.txt" })
-stub("sub/")
-core.open()
-check("open: entering a directory changes cwd into it", cwd_tail() == "sub")
-check("open: listing shows the entered directory's contents", vim.tbl_contains(buf_lines(), "inner.txt"))
+tree({ "-rf.txt" })
+stub("-rf.txt", nil, 1)
+press("d")
+check("delete: handles a dash-prefixed filename", not exists("-rf.txt"))
 
-core.up()
-check("up: returns to the parent directory", vim.tbl_contains(buf_lines(), "sub/"))
+--------------
+---- open ----
+--------------
+
+tree({ "top.txt", "sub/inner.txt" })
+local listed = buf_lines()
+check("open_butter: lists files recursively", vim.tbl_contains(listed, "top.txt") and vim.tbl_contains(listed, "sub/inner.txt"))
+
+tree({ "a.txt", "b.txt" })
+vim.cmd.edit("b.txt")
+core.open_butter()
+check("open_butter: cursor lands on the current file", buf_lines()[vim.api.nvim_win_get_cursor(0)[1]] == "b.txt")
+
+tree({ "aaa/x.txt", "sub/inner.txt" })
+core.open_butter("sub/")
+local cur = vim.api.nvim_win_get_cursor(0)[1]
+check("open_butter: jumps to a directory entry", buf_lines()[cur] == "sub/")
 
 tree({ "file.txt" })
 stub("file.txt")
-core.open()
+press("<cr>")
 check("open: opening a file edits it", vim.fn.fnamemodify(vim.fn.expand("%"), ":t") == "file.txt")
 
--- Reopening with :Butter (no path arg) must NOT reset to root: it stays in the
--- current dir with the cursor on the file you came from.
 tree({ "sub/inner.txt" })
 stub("sub/")
-core.open()
-stub("inner.txt")
-core.open()
-core.open_butter()
-check("Butter: reopens in the current dir, not root", cwd_tail() == "sub")
-local lines = buf_lines()
-local cur = vim.api.nvim_win_get_cursor(0)[1]
-check("Butter: cursor lands on the file you came from", lines[cur] == "inner.txt")
+local butter_buf = vim.api.nvim_get_current_buf()
+press("<cr>")
+check("open: pressing <cr> on a directory does nothing", vim.api.nvim_get_current_buf() == butter_buf)
 
--- sort --------------------------------------------------------------------
+--------------
+---- sort ----
+--------------
 -- utils.sort orders like `tree --dirsfirst`: directories before files at each
 -- level, each directory's contents grouped under it, root-level files last.
+
 check(
   "sort: subdirectories before files at each level, root-level files last",
   vim.deep_equal(
@@ -221,6 +260,20 @@ check(
       "b/",
       "b/foo.txt",
       "bar.txt",
+      "foo.txt",
+    }
+  )
+)
+
+check(
+  "sort: case-insensitive ordering",
+  vim.deep_equal(
+    utils.sort({
+      "foo.txt",
+      "Bar.txt",
+    }),
+    {
+      "Bar.txt",
       "foo.txt",
     }
   )

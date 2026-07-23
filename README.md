@@ -1,13 +1,13 @@
 # 🧈 butter.nvim
 
-A minimal, buttery-smooth file explorer for Neovim. Inspired by [oil.nvim](https://github.com/stevearc/oil.nvim).
+A minimal file explorer for Neovim.
 
 ![Butter neovim plugin preview image](preview.png)
 
 ## Features
 
 - File operations (create, rename, move, copy, delete)
-- Open as the default file explorer when invoked e.g. as `nvim .`
+- Open as the default file explorer when invoked e.g. as `nvim src/`
 
 ## Requirements
 
@@ -42,21 +42,22 @@ require("butter").setup()
 ## Usage
 
 Run `:Butter` to open the explorer in the current window, with the cursor on the
-file you were editing. Inside the buffer:
+file you were editing.
 
-| Key               | Action                                                     |
-| ----------------- | ---------------------------------------------------------- |
-| `o` / `enter`     | Open the file or directory under the cursor                |
-| `-` / `backspace` | Go up to the parent directory                              |
-| `a`               | Add a file or directory (trailing `/` creates a directory) |
-| `m`               | Move / rename                                              |
-| `c`               | Copy                                                       |
-| `d`               | Delete (with confirmation)                                 |
+It lists every file inside the current directory in one flat list, so you open any file directly instead of navigating into folders.
+Directory lines are shown for context but can't be opened.
 
-Navigating into or out of a directory changes the window's working directory
-(via `:lcd`), so it stays in sync with what you're browsing.
+Inside the buffer:
 
-Add it as a keymap in your config:
+| Key           | Action                                                     |
+| ------------- | ---------------------------------------------------------- |
+| `o` / `enter` | Open the file under the cursor                             |
+| `a`           | Add a file or directory (trailing `/` creates a directory) |
+| `m`           | Move / rename                                              |
+| `c`           | Copy                                                       |
+| `d`           | Delete (with confirmation)                                 |
+
+To open it with a keymap, add this to your config:
 
 ```lua
 vim.keymap.set("n", "<leader>e", "<cmd>Butter<cr>", { desc = "Open file explorer" })

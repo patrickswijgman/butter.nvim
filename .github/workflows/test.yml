@@ -24,4 +24,4 @@ jobs:
           sudo ln -s "$(which fdfind)" /usr/local/bin/fd
 
       - name: Run tests
-        run: nvim --headless --noplugin -u NONE --cmd "set rtp+=$PWD" -l tests/run.lua
+        run: nvim --headless --noplugin -u NONE --cmd "set rtp^=$PWD" -l tests/run.lua
