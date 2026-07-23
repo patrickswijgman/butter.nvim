@@ -1,4 +1,4 @@
-# butter.nvim
+# 🧈 butter.nvim
 
 A minimal, buttery-smooth file explorer for Neovim. Inspired by [oil.nvim](https://github.com/stevearc/oil.nvim).
 
