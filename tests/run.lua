@@ -183,24 +183,10 @@ check("delete: handles a dash-prefixed filename", not exists("-rf.txt"))
 ---- open ----
 --------------
 
-tree({ "top.txt", "sub/inner.txt" })
-local listed = buf_lines()
-check("open_butter: lists files recursively", vim.tbl_contains(listed, "top.txt") and vim.tbl_contains(listed, "sub/inner.txt"))
-
-tree({ "a.txt", "b.txt" })
-vim.cmd.edit("b.txt")
-core.open_butter()
-check("open_butter: cursor lands on the current file", buf_lines()[vim.api.nvim_win_get_cursor(0)[1]] == "b.txt")
-
-tree({ "aaa/x.txt", "sub/inner.txt" })
-core.open_butter("sub/")
-local cur = vim.api.nvim_win_get_cursor(0)[1]
-check("open_butter: jumps to a directory entry", buf_lines()[cur] == "sub/")
-
 tree({ "aaa/x.txt", "sub/inner.txt" })
 core.open_butter("sub")
-cur = vim.api.nvim_win_get_cursor(0)[1]
-check("open_butter: jumps to a directory given without a trailing slash", buf_lines()[cur] == "sub/")
+local cursor = vim.api.nvim_win_get_cursor(0)[1]
+check("open_butter: jumps to a directory given without a trailing slash", buf_lines()[cursor] == "sub/")
 
 tree({ "file.txt" })
 stub("file.txt")
@@ -212,6 +198,24 @@ stub("sub/")
 local butter_buf = vim.api.nvim_get_current_buf()
 press("<cr>")
 check("open: pressing <cr> on a directory does nothing", vim.api.nvim_get_current_buf() == butter_buf)
+
+---------------------
+---- open_butter ----
+---------------------
+
+tree({ "top.txt", "sub/inner.txt" })
+local listed = buf_lines()
+check("open_butter: lists files recursively", vim.tbl_contains(listed, "top.txt") and vim.tbl_contains(listed, "sub/inner.txt"))
+
+tree({ "a.txt", "b.txt" })
+vim.cmd.edit("b.txt")
+core.open_butter()
+check("open_butter: cursor lands on the current file", buf_lines()[vim.api.nvim_win_get_cursor(0)[1]] == "b.txt")
+
+tree({ "aaa/x.txt", "sub/inner.txt" })
+core.open_butter("sub/")
+local cursor = vim.api.nvim_win_get_cursor(0)[1]
+check("open_butter: jumps to a directory entry", buf_lines()[cursor] == "sub/")
 
 --------------
 ---- sort ----
