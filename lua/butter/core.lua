@@ -6,9 +6,8 @@ local M = {}
 local buf
 local ns = vim.api.nvim_create_namespace("butter")
 
----Sort given file list by directory first.
+---Sort the given list of files by directory first.
 ---@param files string[]
----@return string[]
 local function sort_files(files)
   local paths = {} ---@type Path[]
   for _, path in ipairs(files) do
@@ -37,8 +36,6 @@ local function sort_files(files)
     -- One path is an ancestor of the other; the ancestor comes first.
     return #a.segments < #b.segments
   end)
-
-  return files
 end
 
 ---@return string[]
