@@ -9,7 +9,7 @@ require("butter").setup()
 local failures = 0
 
 local function check(name, ok)
-  print((ok and "ok   - " or "FAIL - ") .. name)
+  io.write((ok and "ok   - " or "FAIL - ") .. name .. "\n")
   if not ok then
     failures = failures + 1
   end
@@ -279,5 +279,5 @@ check(
   )
 )
 
-print(("\n%d failed"):format(failures))
+io.write(("\n%d failed\n"):format(failures))
 vim.cmd(failures == 0 and "qa!" or "cq!")
