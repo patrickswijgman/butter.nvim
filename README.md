@@ -7,7 +7,7 @@ A minimal file explorer for Neovim.
 ## Features
 
 - File operations (create, rename, move, copy, delete)
-- Open as the default file explorer when invoked e.g. as `nvim src/`
+- Open as the default file explorer when invoked as e.g. `nvim src/`
 
 ## Requirements
 
