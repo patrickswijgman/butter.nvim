@@ -151,6 +151,7 @@ end
 local function setup_buf()
   if not buf or not vim.api.nvim_buf_is_valid(buf) then
     buf = vim.api.nvim_create_buf(false, true)
+    vim.api.nvim_buf_set_name(buf, "[Butter]")
 
     local keymap_opts = { buffer = buf, nowait = true }
     vim.keymap.set("n", "<cr>", open, keymap_opts)
