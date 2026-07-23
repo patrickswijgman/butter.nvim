@@ -6,6 +6,7 @@ local M = {}
 local buf
 local ns = vim.api.nvim_create_namespace("butter")
 
+---Sort given file list by directory first.
 ---@param files string[]
 ---@return string[]
 local function sort_files(files)
@@ -196,7 +197,7 @@ local function setup_buf()
   vim.api.nvim_set_current_buf(buf)
 end
 
----@param entry? string entry to place the cursor on; defaults to the current file
+---@param entry? string
 function M.open_butter(entry)
   local target = entry or utils.get_current_file()
   if vim.fn.isdirectory(target) == 1 then
