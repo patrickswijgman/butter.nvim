@@ -31,8 +31,9 @@ function M.get_parent_dir(path)
   local dir = vim.fn.fnamemodify(vim.fs.normalize(path), ":h")
   if dir == "." then
     return nil
+  else
+    return dir .. "/"
   end
-  return dir .. "/"
 end
 
 ---@param path string
