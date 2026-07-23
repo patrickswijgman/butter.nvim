@@ -9,7 +9,7 @@ local ns = vim.api.nvim_create_namespace("butter")
 ---Sort the given list of entries by directory first.
 ---@param list string[]
 local function sort_entries(list)
-  local paths = {} ---@type Path[]
+  local paths = {} ---@type butter.Path[]
   for _, path in ipairs(list) do
     paths[path] = utils.parse_path(path)
   end

@@ -4,7 +4,7 @@ local config = require("butter.config")
 
 local M = {}
 
----@param user_opts? ConfigOpts
+---@param user_opts? butter.Config
 function M.setup(user_opts)
   config.setup(user_opts)
   commands.setup()

@@ -1,4 +1,4 @@
----@class ConfigOpts
+---@class butter.Config
 ---@field show_hidden? boolean
 ---@field no_ignore? boolean
 ---@field exclude? string[]
@@ -7,7 +7,7 @@
 
 local M = {}
 
----@type ConfigOpts
+---@type butter.Config
 local defaults = {
   show_hidden = false,
   no_ignore = false,
@@ -16,10 +16,10 @@ local defaults = {
   auto_open = false,
 }
 
----@type ConfigOpts
+---@type butter.Config
 M.opts = defaults
 
----@param user_opts? ConfigOpts
+---@param user_opts? butter.Config
 function M.setup(user_opts)
   M.opts = vim.tbl_deep_extend("force", {}, defaults, user_opts or {})
 end

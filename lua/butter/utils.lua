@@ -59,12 +59,12 @@ function M.ensure_dir(src, dst)
   end
 end
 
----@class Path
+---@class butter.Path
 ---@field is_dir boolean
 ---@field segments string[]
----
+
 ---@param path string
----@return Path
+---@return butter.Path
 function M.parse_path(path)
   return {
     is_dir = M.is_directory(path),
