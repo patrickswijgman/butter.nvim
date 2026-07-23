@@ -6,6 +6,7 @@ words = [
     "buflisted",
     "buftype",
     "devicons",
+    "dirbuf",
     "dirsfirst",
     "esc",
     "fd's",

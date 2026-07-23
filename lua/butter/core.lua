@@ -197,13 +197,24 @@ end
 ---@param entry? string
 function M.open_butter(entry)
   local target = entry or utils.get_current_file()
+
+  -- Support Neovim directory arg (e.g. `nvim lua/`) with and without trailing slash.
   if vim.fn.isdirectory(target) == 1 then
     target = vim.fs.normalize(target) .. "/"
   end
 
+  -- Neovim opens a directory arg (e.g. `nvim lua/`) as a listed buffer
+  -- that needs to be wiped afterwards to prevent it from lingering.
+  local prev = vim.api.nvim_get_current_buf()
+  local prev_is_dir = vim.fn.isdirectory(vim.api.nvim_buf_get_name(prev)) == 1
+
   setup_buf()
   update_buf()
   jump_to(target)
+
+  if prev_is_dir and prev ~= buf then
+    vim.api.nvim_buf_delete(prev, { force = true })
+  end
 end
 
 return M

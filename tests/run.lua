@@ -102,6 +102,11 @@ stub("", "-dash.txt")
 press("a")
 check("add: handles a dash-prefixed filename", exists("-dash.txt"))
 
+local add_root = tree({ "keep.txt" })
+stub("", "")
+press("a")
+check("add: empty input cancels", #vim.fn.readdir(add_root) == 1)
+
 --------------
 ---- move ----
 --------------
@@ -126,10 +131,20 @@ stub("old/", "new/")
 press("m")
 check("move: renames a directory without nesting", exists("new/f.txt") and not exists("new/old"))
 
+tree({ "a.txt", "b.txt" })
+stub("a.txt", "b.txt")
+press("m")
+check("move: -n does not clobber an existing destination", exists("a.txt") and exists("b.txt"))
+
 tree({ "old.txt" })
 stub("old.txt", "-dash.txt")
 press("m")
 check("move: handles a dash-prefixed destination", exists("-dash.txt") and not exists("old.txt"))
+
+local root = tree({ "old.txt" })
+stub("old.txt", "")
+press("m")
+check("move: empty input cancels", exists("old.txt") and #vim.fn.readdir(root) == 1)
 
 --------------
 ---- copy ----
@@ -150,15 +165,25 @@ stub("src/", "dst/")
 press("c")
 check("copy: copies a directory recursively", exists("dst/f.txt") and exists("src/f.txt"))
 
+tree({ "f.txt" })
+stub("f.txt", "sub/")
+press("c")
+check("copy: copies a file into a directory", exists("sub/f.txt") and exists("f.txt"))
+
+tree({ "a.txt", "b.txt" })
+stub("a.txt", "b.txt")
+press("c")
+check("copy: -n does not clobber an existing destination", exists("a.txt") and exists("b.txt"))
+
 tree({ "src.txt" })
 stub("src.txt", "-dash.txt")
 press("c")
 check("copy: handles a dash-prefixed destination", exists("src.txt") and exists("-dash.txt"))
 
-tree({ "a.txt", "b.txt" })
-stub("a.txt", "b.txt")
-press("m")
-check("move: -n does not clobber an existing destination", exists("a.txt") and exists("b.txt"))
+local copy_root = tree({ "src.txt" })
+stub("src.txt", "")
+press("c")
+check("copy: empty input cancels", exists("src.txt") and #vim.fn.readdir(copy_root) == 1)
 
 ----------------
 ---- delete ----
@@ -183,11 +208,6 @@ check("delete: handles a dash-prefixed filename", not exists("-rf.txt"))
 ---- open ----
 --------------
 
-tree({ "aaa/x.txt", "sub/inner.txt" })
-core.open_butter("sub")
-local cursor = vim.api.nvim_win_get_cursor(0)[1]
-check("open_butter: jumps to a directory given without a trailing slash", buf_lines()[cursor] == "sub/")
-
 tree({ "file.txt" })
 stub("file.txt")
 press("<cr>")
@@ -202,7 +222,7 @@ check("open: pressing <cr> on a directory does nothing", vim.api.nvim_get_curren
 ---------------------
 ---- open_butter ----
 ---------------------
-
+---
 tree({ "top.txt", "sub/inner.txt" })
 local listed = buf_lines()
 check("open_butter: lists files recursively", vim.tbl_contains(listed, "top.txt") and vim.tbl_contains(listed, "sub/inner.txt"))
@@ -213,9 +233,26 @@ core.open_butter()
 check("open_butter: cursor lands on the current file", buf_lines()[vim.api.nvim_win_get_cursor(0)[1]] == "b.txt")
 
 tree({ "aaa/x.txt", "sub/inner.txt" })
+core.open_butter("sub")
+local cursor = vim.api.nvim_win_get_cursor(0)[1]
+check("open_butter: jumps to a directory given without a trailing slash", buf_lines()[cursor] == "sub/")
+
+tree({ "aaa/x.txt", "sub/inner.txt" })
 core.open_butter("sub/")
 local cursor = vim.api.nvim_win_get_cursor(0)[1]
 check("open_butter: jumps to a directory entry", buf_lines()[cursor] == "sub/")
+
+tree({ "top.txt" })
+vim.cmd.edit(".")
+local dirbuf = vim.api.nvim_get_current_buf()
+core.open_butter(".")
+check("open_butter: wipes the directory buffer it was opened from", not vim.api.nvim_buf_is_valid(dirbuf))
+
+tree({ "x.txt" })
+core.open_butter()
+local first_buf = vim.api.nvim_get_current_buf()
+core.open_butter()
+check("open_butter: reuses the same buffer across calls", vim.api.nvim_get_current_buf() == first_buf)
 
 --------------
 ---- sort ----
@@ -242,8 +279,17 @@ check(
   })
 )
 
-tree({ "foo.txt", "Bar.txt" })
-check("sort: case-insensitive ordering", vim.deep_equal(buf_lines(), { "Bar.txt", "foo.txt" }))
+tree({
+  "foo.txt",
+  "Bar.txt",
+})
+check(
+  "sort: case-insensitive ordering",
+  vim.deep_equal(buf_lines(), {
+    "Bar.txt",
+    "foo.txt",
+  })
+)
 
 io.write(("\n%d failed\n"):format(failures))
 vim.cmd(failures == 0 and "qa!" or "cq!")
