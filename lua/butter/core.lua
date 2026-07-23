@@ -6,6 +6,54 @@ local M = {}
 local buf
 local ns = vim.api.nvim_create_namespace("butter")
 
+---@class Path
+---@field is_dir boolean
+---@field segments string[]
+
+---Computed once per entry so the comparison below stays cheap.
+---@param path string
+---@return Path
+local function parse_path(path)
+  return {
+    is_dir = utils.is_directory(path),
+    segments = vim.split(path:lower(), "/", { plain = true, trimempty = true }),
+  }
+end
+
+---@param files string[]
+---@return string[]
+local function sort_files(files)
+  local paths = {} ---@type Path[]
+  for _, path in ipairs(files) do
+    paths[path] = parse_path(path)
+  end
+
+  table.sort(files, function(a, b)
+    a = paths[a]
+    b = paths[b]
+
+    for i = 1, math.min(#a.segments, #b.segments) do
+      if a.segments[i] ~= b.segments[i] then
+        -- A segment is a directory if the path continues below it, or if it's
+        -- the last segment of a directory entry (e.g. the "a/b/" line itself).
+        -- Directories sort first.
+        local a_dir = i < #a.segments or a.is_dir
+        local b_dir = i < #b.segments or b.is_dir
+        if a_dir ~= b_dir then
+          return a_dir
+        end
+
+        return a.segments[i] < b.segments[i]
+      end
+    end
+
+    -- One path is an ancestor of the other; the ancestor comes first.
+    return #a.segments < #b.segments
+  end)
+
+  return files
+end
+
 ---@return string[]
 local function get_files()
   local command = { "fd" }
@@ -27,7 +75,7 @@ local function get_files()
   local files = utils.split_lines(output)
 
   if config.opts.sort then
-    utils.sort(files)
+    sort_files(files)
   end
 
   return files

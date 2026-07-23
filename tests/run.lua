@@ -2,7 +2,6 @@
 -- `nvim --headless --noplugin -u NONE --cmd "set rtp^=$PWD" -l tests/run.lua`
 
 local core = require("butter.core")
-local utils = require("butter.utils")
 
 require("butter").setup()
 
@@ -35,7 +34,7 @@ local function tree(files)
     vim.fn.mkdir(vim.fn.fnamemodify(path, ":h"), "p")
     vim.fn.writefile({}, path)
   end
-  vim.cmd.lcd(root)
+  vim.fn.chdir(root)
   vim.cmd("Butter")
   return root
 end
@@ -221,68 +220,32 @@ check("open: pressing <cr> on a directory does nothing", vim.api.nvim_get_curren
 --------------
 ---- sort ----
 --------------
--- utils.sort orders like `tree --dirsfirst`: directories before files at each
--- level, each directory's contents grouped under it, root-level files last.
+-- The listing orders like `tree --dirsfirst`: a directory's line heads its own
+-- group, subdirectories before files at each level, root-level files last.
 
+tree({
+  "foo.txt",
+  "bar.txt",
+  "b/foo.txt",
+  "a/b/foo.txt",
+  "a/foo.txt",
+})
 check(
-  "sort: subdirectories before files at each level, root-level files last",
-  vim.deep_equal(
-    utils.sort({
-      "foo.txt",
-      "bar.txt",
-      "b/foo.txt",
-      "a/b/foo.txt",
-      "a/foo.txt",
-    }),
-    {
-      "a/b/foo.txt",
-      "a/foo.txt",
-      "b/foo.txt",
-      "bar.txt",
-      "foo.txt",
-    }
-  )
+  "sort: dirs head their group, subdirs before files, root-level files last",
+  vim.deep_equal(buf_lines(), {
+    "a/",
+    "a/b/",
+    "a/b/foo.txt",
+    "a/foo.txt",
+    "b/",
+    "b/foo.txt",
+    "bar.txt",
+    "foo.txt",
+  })
 )
 
-check(
-  "sort: a directory's line heads its own group, subdirs before files",
-  vim.deep_equal(
-    utils.sort({
-      "foo.txt",
-      "a/",
-      "b/",
-      "a/b/",
-      "a/foo.txt",
-      "a/b/foo.txt",
-      "b/foo.txt",
-      "bar.txt",
-    }),
-    {
-      "a/",
-      "a/b/",
-      "a/b/foo.txt",
-      "a/foo.txt",
-      "b/",
-      "b/foo.txt",
-      "bar.txt",
-      "foo.txt",
-    }
-  )
-)
-
-check(
-  "sort: case-insensitive ordering",
-  vim.deep_equal(
-    utils.sort({
-      "foo.txt",
-      "Bar.txt",
-    }),
-    {
-      "Bar.txt",
-      "foo.txt",
-    }
-  )
-)
+tree({ "foo.txt", "Bar.txt" })
+check("sort: case-insensitive ordering", vim.deep_equal(buf_lines(), { "Bar.txt", "foo.txt" }))
 
 io.write(("\n%d failed\n"):format(failures))
 vim.cmd(failures == 0 and "qa!" or "cq!")
