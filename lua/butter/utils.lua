@@ -62,8 +62,7 @@ end
 ---@class Path
 ---@field is_dir boolean
 ---@field segments string[]
-
----Computed once per entry so the comparison below stays cheap.
+---
 ---@param path string
 ---@return Path
 function M.parse_path(path)
