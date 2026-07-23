@@ -184,7 +184,6 @@ local function setup_buf()
 
     local keymap_opts = { buffer = buf, nowait = true }
     vim.keymap.set("n", "<cr>", open, keymap_opts)
-    vim.keymap.set("n", "o", open, keymap_opts)
     vim.keymap.set("n", "a", add, keymap_opts)
     vim.keymap.set("n", "m", move, keymap_opts)
     vim.keymap.set("n", "c", copy, keymap_opts)

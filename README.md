@@ -49,13 +49,13 @@ Directory lines are shown for context but can't be opened.
 
 Inside the buffer:
 
-| Key           | Action                                                     |
-| ------------- | ---------------------------------------------------------- |
-| `o` / `enter` | Open the file under the cursor                             |
-| `a`           | Add a file or directory (trailing `/` creates a directory) |
-| `m`           | Move / rename                                              |
-| `c`           | Copy                                                       |
-| `d`           | Delete (with confirmation)                                 |
+| Key     | Action                                                     |
+| ------- | ---------------------------------------------------------- |
+| `enter` | Open the file under the cursor                             |
+| `a`     | Add a file or directory (trailing `/` creates a directory) |
+| `m`     | Move / rename                                              |
+| `c`     | Copy                                                       |
+| `d`     | Delete (with confirmation)                                 |
 
 To open it with a keymap, add this to your config:
 
