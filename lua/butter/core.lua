@@ -6,15 +6,15 @@ local M = {}
 local buf
 local ns = vim.api.nvim_create_namespace("butter")
 
----Sort the given list of files by directory first.
----@param files string[]
-local function sort_files(files)
+---Sort the given list of entries by directory first.
+---@param list string[]
+local function sort_entries(list)
   local paths = {} ---@type Path[]
-  for _, path in ipairs(files) do
+  for _, path in ipairs(list) do
     paths[path] = utils.parse_path(path)
   end
 
-  table.sort(files, function(a, b)
+  table.sort(list, function(a, b)
     a = paths[a]
     b = paths[b]
 
@@ -39,7 +39,7 @@ local function sort_files(files)
 end
 
 ---@return string[]
-local function get_files()
+local function get_entries()
   local command = { "fd" }
 
   if config.opts.show_hidden then
@@ -56,13 +56,13 @@ local function get_files()
   end
 
   local output = utils.cmd(command)
-  local files = utils.split_lines(output)
+  local entries = utils.split_lines(output)
 
   if config.opts.sort then
-    sort_files(files)
+    sort_entries(entries)
   end
 
-  return files
+  return entries
 end
 
 ---@param path string
@@ -77,15 +77,15 @@ local function jump_to(path)
 end
 
 local function update_buf()
-  local files = get_files()
+  local entries = get_entries()
 
   vim.bo[buf].modifiable = true
-  vim.api.nvim_buf_set_lines(buf, 0, -1, false, files)
+  vim.api.nvim_buf_set_lines(buf, 0, -1, false, entries)
   vim.bo[buf].modifiable = false
 
   vim.api.nvim_buf_clear_namespace(buf, ns, 0, -1)
 
-  for i, path in ipairs(files) do
+  for i, path in ipairs(entries) do
     local icon, hl = utils.get_icon(path)
     if icon then
       vim.api.nvim_buf_set_extmark(buf, ns, i - 1, 0, {
@@ -94,10 +94,10 @@ local function update_buf()
       })
     end
 
-    local slash = path:match("^.*()/")
-    if slash then
+    local dir_path = path:match("^.*()/")
+    if dir_path then
       vim.api.nvim_buf_set_extmark(buf, ns, i - 1, 0, {
-        end_col = slash,
+        end_col = dir_path,
         hl_group = "Directory",
       })
     end
